@@ -15,7 +15,9 @@ namespace Modbus
         static void Main(string[] args)
         {
             clients = Helpers.setup(ports);
-            Console.WriteLine("Value of Discr. Input #1: " + clients[0].ReadHoldingRegisters(20, 4).ToString());	//Reads Discrete Input #1
+            Console.WriteLine("Value of Discr. Input #1: " + clients[0].ReadHoldingRegisters((int)ConfigDM5.SYSTEM_VOLTAGE.system_voltage,(int)ConfigDM5.SYSTEM_VOLTAGE.size_adress).ToString());	//Reads Discrete Input #1
+            Helpers.disconnect(clients);
+            
         }
     }
 }
