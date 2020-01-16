@@ -28,7 +28,7 @@
       "name": "SensorRS485Module Local Debug (.NET Core)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceRoot}/modules/SensorRS485Module/bin/Debug/netcoreapp2.1/SensorRS485Module.dll",
+      "program": "${workspaceRoot}/modules/SensorRS485Module/bin/Debug/netcoreapp3.1/SensorRS485Module.dll",
       "args": [],
       "cwd": "${workspaceRoot}/modules/SensorRS485Module",
       "internalConsoleOptions": "openOnSessionStart",
