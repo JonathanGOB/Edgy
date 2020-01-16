@@ -1,41 +1,22 @@
-from pymongo import MongoClient
-from collections import OrderedDict
+from azure.cosmosdb.table.tableservice import TableService
+from azure.cosmosdb.table.models import Entity
 
-client = MongoClient('13.95.226.151', 27017)
-database = client['iotplatform']
+#get connection with the table storage
+try:
+    table_service = TableService(account_name='stagerobbeoesmandiag', account_key='oZdA2sPZtAM1ZtLOEN/MHKluqOHmDahNagJqR/VasbFVRSYvxj947Zz4Tf0mjA5EwYME0/Bj5l2JF/ZQEOjHSQ==')
+except Exception as e:
+    raise Exception("cannot create connection: ", e)
 
-database.create_collection("user")
 
-user_validation = {
-    "$jsonschema":{
-        "required": ["name", "email", "password", "made at"],
-        "properties":{
-            "name":{
-                "bsonType": "string",
-                "description": "must be a string and is required"
-            },
+#create tables in table storage
+try:
+    table_service.create_table('users')
+    table_service.create_table('edgedevices')
+    table_service.create_table('sensors')
+    table_service.create_table('sensorsdevice')
+    table_service.create_table('sensordata')
 
-            "email":{
-                "bsonType": "string",
-                "description": "must be a string and is required"
-            },
+except Exception as e:
+    raise Exception("cannot make tables: ", e)
 
-            "password": {
-                "bsonType": "string",
-                "description": "must be a string and is required"
-            },
-
-            "made at": {
-                "bsonType": "date",
-                "description": "must be a date and is required"
-            },
-        }
-    }
-}
-
-query = [('collMod', 'iotplatform'),
-        ('validator', user_validation),
-        ('validationLevel', 'moderate')]
-
-query = OrderedDict(query)
-database.command(query)
+print("successful migration")
