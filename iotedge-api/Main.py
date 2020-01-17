@@ -12,6 +12,17 @@ app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
 jwt = JWTManager(app)
 
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user.username
+
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+    return {
+        'name': identity.username,
+        'email': identity.email
+    }
+
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     storage = AzureTableStorage()

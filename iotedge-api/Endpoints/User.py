@@ -1,10 +1,12 @@
 import base64
-
 import bcrypt
 from azure.cosmosdb.table import Entity
 from flask_restful import Resource, reqparse
+from flask import jsonify
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
+from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
+
 
 parser = reqparse.RequestParser()
 parser.add_argument('PartitionKey', type=str, required=False)
@@ -13,10 +15,39 @@ parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Email', type=str, required=False)
 parser.add_argument('Password', type=str, required=False)
 
+class UserObject:
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+
 class UserLogin(Resource):
     def get(self):
         args = parser.parse_args()
-        filter = "Name eq '{}'".format(args['Name'])
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        filter = "Email eq '{}'".format(args['Email'])
+        user = table_service.query_entities('users', filter=filter)
+        user = list(user)[0]
+
+        if not user:
+            return {"message": "email {} doesn't exist".format(args['Email'])}
+        if user:
+            if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
+                try:
+                    userObject = UserObject(username=user["Name"], email=user["Email"])
+                    access_token = create_access_token(identity = userObject)
+                    refresh_token = create_refresh_token(identity = userObject)
+
+                    return {
+                        'message': 'Logged in as {}'.format(user['Name']),
+                        'access_token': access_token,
+                        'refresh_token': refresh_token
+                    }
+                except Exception as e:
+                    print(e)
+                    return {"message" : "something went wrong"}
+            else:
+                return {"message": "wrong password"}
 
 
 class UserRegistration(Resource):
@@ -45,7 +76,7 @@ class UserRegistration(Resource):
             'users', filter=check)
 
         if len(list(check_user)) >= 1:
-            return {"Message": "Error email already used"}
+            return {"message": "error email already used"}
 
         table_service.insert_entity('users', user)
         ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'], "NewId": user_table["NewId"] + 1, "Size": user_table["Size"] + 1}
