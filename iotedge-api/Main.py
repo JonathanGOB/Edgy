@@ -28,13 +28,17 @@ def check_if_token_in_blacklist(decrypted_token):
     storage = AzureTableStorage()
     table_service = AzureTableStorage.get_table()
     jti = decrypted_token['jti']
-    filter = "token eq '{}'".format(jti)
+    filter = "Token eq '{}'".format(jti)
     existence = table_service.query_entities('revokedtokens', filter=filter)
     existence = list(existence)
     return len(existence) == 1
 
 api.add_resource(User.UserLogin, '/Api/V1/Login', endpoint='Login')
 api.add_resource(User.UserRegistration, '/Api/V1/Register', endpoint='Register')
+api.add_resource(User.TokenRefresh, 'Api/V1/RefreshToken', endpoint='RefreshToken')
+api.add_resource(User.UserLogoutAccess, 'Api/V1/Logout/Access', endpoint='Access')
+api.add_resource(User.UserLogoutRefresh, 'Api/V1/Logout/Refresh', endpoint='Refresh')
+
 
 if __name__ == '__main__':
     app.run()

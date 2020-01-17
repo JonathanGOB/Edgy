@@ -92,3 +92,44 @@ class UserRegistration(Resource):
         return {"message": "success", "user": user}
 
 
+class UserLogoutAccess(Resource):
+    @jwt_required
+    def post(self):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        jti = get_raw_jwt()['jti']
+        filter = "PartitionKey eq 'revokedtokens'"
+        revokedtokens_table = table_service.query_entities('revokedtokens', filter=filter)
+        revokedtokens_table = list(revokedtokens_table)[0]
+
+        try:
+            revoked_token = {"PartitionKey": "AccessToken", "RowKey": revokedtokens_table["NewId"], "Token": jti}
+            ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
+                                   "RowKey": revokedtokens_table['RowKey'],
+                                   "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+            table_service.update_entity('rulers', ruler_revokedtokens)
+            table_service.insert_entity(revoked_token)
+            return {'message': 'Access token has been revoked'}
+        except:
+            return {'message': 'Something went wrong'}
+
+
+class UserLogoutRefresh(Resource):
+    @jwt_refresh_token_required
+    def post(self):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        jti = get_raw_jwt()['jti']
+        filter = "PartitionKey eq 'revokedtokens'"
+        revokedtokens_table = table_service.query_entities('revokedtokens', filter=filter)
+        revokedtokens_table = list(revokedtokens_table)[0]
+
+        try:
+            revoked_token = {"PartitionKey": "RefreshToken", "RowKey": revokedtokens_table["NewId"], "Token": jti}
+            ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'], "RowKey": revokedtokens_table['RowKey'],
+                           "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+            table_service.update_entity('rulers', ruler_revokedtokens)
+            table_service.insert_entity(revoked_token)
+            return {'message': 'Access token has been revoked'}
+        except:
+            return {'message': 'Something went wrong'}
