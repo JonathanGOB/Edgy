@@ -31,43 +31,43 @@ except Exception as e:
 user_table = Entity()
 user_table.PartitionKey = 'users'
 user_table.RowKey = '0'
-user_table.LastId = 0
+user_table.NewId = 0
 user_table.Size = 0
 
 edgedevices_table = Entity()
 edgedevices_table.PartitionKey = 'edgedevices'
 edgedevices_table.RowKey = '1'
-edgedevices_table.LastId = 0
+edgedevices_table.NewId = 0
 edgedevices_table.Size = 0
 
 sensors_table = Entity()
 sensors_table.PartitionKey = 'sensors'
 sensors_table.RowKey = '2'
-sensors_table.LastId = 0
+sensors_table.NewId = 0
 sensors_table.Size = 0
 
 sensordevices_table = Entity()
 sensordevices_table.PartitionKey = 'sensordevices'
 sensordevices_table.RowKey = '3'
-sensordevices_table.LastId = 0
+sensordevices_table.NewId = 0
 sensordevices_table.Size = 0
 
 sensordata_table = Entity()
 sensordata_table.PartitionKey = 'sensordata'
 sensordata_table.RowKey = '4'
-sensordata_table.LastId = 0
+sensordata_table.NewId = 0
 sensordata_table.Size = 0
 
 rulers_table = Entity()
 rulers_table.PartitionKey = 'rulers'
 rulers_table.RowKey = '5'
-rulers_table.LastId = 6
+rulers_table.NewId = 7
 rulers_table.Size = 7
 
 revokedtokens_table = Entity()
 revokedtokens_table.PartitionKey = 'revokedtokens'
 revokedtokens_table.RowKey = '6'
-revokedtokens_table.LastId = 0
+revokedtokens_table.NewId = 0
 revokedtokens_table.Size = 0
 
 # batch insertion

@@ -22,7 +22,8 @@ def check_if_token_in_blacklist(decrypted_token):
     existence = list(existence)
     return len(existence) == 1
 
-api.add_resource(User.UserLogin, '/Api/V1/Login', endpoint='User')
+api.add_resource(User.UserLogin, '/Api/V1/Login', endpoint='Login')
+api.add_resource(User.UserRegistration, '/Api/V1/Register', endpoint='Register')
 
 if __name__ == '__main__':
     app.run()
