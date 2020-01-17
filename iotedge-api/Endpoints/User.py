@@ -5,12 +5,11 @@ from flask_restful import Resource, reqparse
 from flask import jsonify
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
+from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
+                                get_jwt_identity, get_raw_jwt, get_jwt_claims)
 
 
 parser = reqparse.RequestParser()
-parser.add_argument('PartitionKey', type=str, required=False)
-parser.add_argument('RowKey', type=int, required=False)
 parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Email', type=str, required=False)
 parser.add_argument('Password', type=str, required=False)
@@ -133,3 +132,17 @@ class UserLogoutRefresh(Resource):
             return {'message': 'Access token has been revoked'}
         except:
             return {'message': 'Something went wrong'}
+
+class GetUser(Resource):
+    @jwt_required
+    def get(self):
+        args = parser.parse_args()
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+
+        filter = "Email eq '{}'".format(get_jwt_claims())
+        user = table_service.query_entities('users', filter=filter)
+        user = list(user)[0]
+
+        return {"message": "success", "user": user}
+
