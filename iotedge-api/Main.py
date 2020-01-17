@@ -1,8 +1,8 @@
 from flask_jwt_extended import JWTManager
-from flask_restful import Api, Resource
+from flask_restful import Api
 from flask import Flask
-import User
-from TableStorageConnection import AzureTableStorage
+from Endpoints import User
+from TableStorage.TableStorageConnection import AzureTableStorage
 
 app = Flask(__name__)
 api = Api(app)

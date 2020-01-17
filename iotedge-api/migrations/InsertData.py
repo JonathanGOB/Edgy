@@ -1,4 +1,4 @@
-from TableStorageConnection import AzureTableStorage
+from TableStorage.TableStorageConnection import AzureTableStorage
 
 table_service = AzureTableStorage().get_table()
 

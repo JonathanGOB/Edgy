@@ -1,7 +1,5 @@
-from azure.cosmosdb.table.tableservice import TableService
 from azure.cosmosdb.table.models import Entity
-from TableStorageConnection import AzureTableStorage
-from azure.cosmosdb.table.tablebatch import TableBatch
+from TableStorage.TableStorageConnection import AzureTableStorage
 
 storageclass = AzureTableStorage()
 table_service = storageclass.get_table()
