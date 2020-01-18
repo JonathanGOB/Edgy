@@ -103,16 +103,18 @@ class UserLogoutAccess(Resource):
         table_service = storage.get_table()
         jti = get_raw_jwt()['jti']
         filter = "PartitionKey eq 'revokedtokens'"
-        revokedtokens_table = table_service.query_entities('revokedtokens', filter=filter)
+        revokedtokens_table = table_service.query_entities('rulers', filter=filter)
         revokedtokens_table = list(revokedtokens_table)[0]
+        print(revokedtokens_table)
+        print(jti)
 
         try:
-            revoked_token = {"PartitionKey": "AccessToken", "RowKey": revokedtokens_table["NewId"], "Token": jti}
+            revoked_token = {"PartitionKey": "AccessToken", "RowKey": str(revokedtokens_table["NewId"]), "Token": jti}
             ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
                                    "RowKey": revokedtokens_table['RowKey'],
                                    "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
             table_service.update_entity('rulers', ruler_revokedtokens)
-            table_service.insert_entity(revoked_token)
+            table_service.insert_entity('revokedtokens', revoked_token)
             return {'message': 'Access token has been revoked', "uri": request.base_url}
         except:
             return {'message': 'Something went wrong'}
@@ -134,7 +136,7 @@ class UserLogoutRefresh(Resource):
                                    "RowKey": revokedtokens_table['RowKey'],
                                    "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
             table_service.update_entity('rulers', ruler_revokedtokens)
-            table_service.insert_entity(revoked_token)
+            table_service.insert_entity('revokedtokens', revoked_token)
             return {'message': 'Access token has been revoked', "uri": request.base_url}
         except:
             return {'message': 'Something went wrong'}

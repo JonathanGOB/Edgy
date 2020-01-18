@@ -90,5 +90,5 @@ class GetSingleEdgeDevice(Resource):
             return {"message": "error device not found"}
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "edgedevices": edgedevice, "uri": request.base_url}
+        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
 

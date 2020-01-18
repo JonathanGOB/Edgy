@@ -1,6 +1,6 @@
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
-from flask import Flask
+from flask import Flask, jsonify
 from Endpoints import User, EdgeDevice, SensorDevice, Sensor, SensorData
 from TableStorage.TableStorageConnection import AzureTableStorage
 
@@ -10,11 +10,20 @@ api = Api(app)
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+app.config['PROPAGATE_EXCEPTIONS'] = True
 jwt = JWTManager(app)
+
+
+@jwt.revoked_token_loader
+def return_json_revoke_response():
+    return jsonify({
+        "message": "token revoked"
+    }), 401
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):
-    return user.username
+    return user.email
+
 
 @jwt.user_claims_loader
 def add_claims_to_access_token(identity):
@@ -23,6 +32,7 @@ def add_claims_to_access_token(identity):
         'email': identity.email,
         'id': identity.id
     }
+
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
@@ -33,6 +43,7 @@ def check_if_token_in_blacklist(decrypted_token):
     existence = table_service.query_entities('revokedtokens', filter=filter)
     existence = list(existence)
     return len(existence) == 1
+
 
 api.add_resource(User.UserLogin, '/Api/V1/Login', endpoint='Login')
 api.add_resource(User.UserRegistration, '/Api/V1/Register', endpoint='Register')
