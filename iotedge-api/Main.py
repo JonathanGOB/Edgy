@@ -1,7 +1,7 @@
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
 from flask import Flask
-from Endpoints import User, EdgeDevice, SensorDevice
+from Endpoints import User, EdgeDevice, SensorDevice, Sensor
 from TableStorage.TableStorageConnection import AzureTableStorage
 
 app = Flask(__name__)
@@ -44,6 +44,8 @@ api.add_resource(EdgeDevice.EdgeDevices, '/Api/V1/EdgeDevices', endpoint="EdgeDe
 api.add_resource(EdgeDevice.GetSingleEdgeDevice, '/Api/V1/EdgeDevices/<int:id>')
 api.add_resource(SensorDevice.SensorsDevices, '/Api/V1/SensorsDevices', endpoint="SensorDevices")
 api.add_resource(SensorDevice.GetSingleSensorsDevice, '/Api/V1/SensorsDevices/<int:id>')
+api.add_resource(Sensor.Sensors, '/Api/V1/Sensors', endpoint="Sensors")
+api.add_resource(Sensor.GetSingleSensor, '/Api/V1/Sensors/<int:id>')
 
 
 if __name__ == '__main__':

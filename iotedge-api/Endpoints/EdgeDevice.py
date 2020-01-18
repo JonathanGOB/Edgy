@@ -21,7 +21,7 @@ class EdgeDevices(Resource):
         verify_jwt_in_request()
         filter = "owner_id eq '{0}'".format(get_jwt_claims()["id"])
         rows = table_service.query_entities('edgedevices', filter=filter)
-        return {"message": "success", "devices": list(rows), "uri": request.base_url}
+        return {"message": "success", "edgedevices": list(rows), "uri": request.base_url}
 
     @jwt_required
     def post(self):
@@ -35,16 +35,16 @@ class EdgeDevices(Resource):
         edgedevice_table = list(edgedevice_table)[0]
 
         edgedevice_fields = {
-            "PartitionKey": args["Location"],
+            "PartitionKey": args["Location"].replace("'", ";"),
             "RowKey": str(edgedevice_table["NewId"]),
-            "Name": args["Name"],
-            "Description": args["Description"],
+            "Name": args["Name"].replace("'", ";"),
+            "Description": args["Description"].replace("'", ";"),
             "OwnerId": get_jwt_claims()["id"]
         }
 
         print(edgedevice_fields)
 
-        check = "Name eq '{}'".format(args["Name"])
+        check = "Name eq '{}'".format(args["Name"].replace("'", ";"))
 
         check_edgedevice = table_service.query_entities(
             'edgedevices', filter=check)
@@ -73,7 +73,7 @@ class GetSingleEdgeDevice(Resource):
         searcher = None
 
         if id:
-            specification = id
+            specification = id.replace("'", ";")
             searcher = "DeviceId"
 
         else:
@@ -87,5 +87,5 @@ class GetSingleEdgeDevice(Resource):
         else:
             return {"message": "error device not found"}
 
-        return {"message": "success", "devices": list(edgedevice), "uri": request.base_url}
+        return {"message": "success", "edgedevices": list(edgedevice), "uri": request.base_url}
 
