@@ -22,8 +22,10 @@ class Sensors(Resource):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
-        filter = "owner_id eq '{0}'".format(get_jwt_claims()["id"])
+        filter = "OwnerId eq '{0}'".format(get_jwt_claims()["id"])
         rows = table_service.query_entities('sensors', filter=filter)
+        for row in rows:
+            row["Timestamp"] = row["Timestamp"].isoformat()
         return {"message": "success", "sensors": list(rows), "uri": request.base_url}
 
     @jwt_required
@@ -80,7 +82,7 @@ class GetSingleSensor(Resource):
 
         if id:
             specification = id
-            searcher = "DeviceId"
+            searcher = "RowKey"
 
         else:
             return {"message": "error device not found"}

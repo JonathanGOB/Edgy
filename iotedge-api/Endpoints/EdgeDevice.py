@@ -19,8 +19,10 @@ class EdgeDevices(Resource):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
-        filter = "owner_id eq '{0}'".format(get_jwt_claims()["id"])
+        filter = "OwnerId eq '{0}'".format(get_jwt_claims()["id"])
         rows = table_service.query_entities('edgedevices', filter=filter)
+        for row in rows:
+            row["Timestamp"] = row["Timestamp"].isoformat()
         return {"message": "success", "edgedevices": list(rows), "uri": request.base_url}
 
     @jwt_required
