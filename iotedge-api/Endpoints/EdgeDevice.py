@@ -74,12 +74,12 @@ class GetSingleEdgeDevice(Resource):
 
         if id:
             specification = id.replace("'", ";")
-            searcher = "DeviceId"
+            searcher = "RowKey"
 
         else:
             return {"message": "error device not found"}
 
-        filter = "owner_id eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
+        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
         edgedevice = table_service.query_entities('edgedevices', filter=filter)
         if len(list(edgedevice)) > 0:
@@ -87,5 +87,6 @@ class GetSingleEdgeDevice(Resource):
         else:
             return {"message": "error device not found"}
 
-        return {"message": "success", "edgedevices": list(edgedevice), "uri": request.base_url}
+        edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
+        return {"message": "success", "edgedevices": edgedevice, "uri": request.base_url}
 

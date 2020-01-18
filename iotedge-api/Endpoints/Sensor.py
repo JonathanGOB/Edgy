@@ -12,7 +12,6 @@ parser = reqparse.RequestParser()
 parser.add_argument('SensorsDeviceId', type=str, required=False)
 parser.add_argument('Location', type=str, required=False)
 parser.add_argument('Name', type=str, required=False)
-parser.add_argument('Protocol', type=str, required=False)
 parser.add_argument('Datatype', type=str, required=False)
 parser.add_argument('Description', type=str, required=False)
 
@@ -45,7 +44,6 @@ class Sensors(Resource):
             "Description": args["Description"].replace("'", ";"),
             "SensorsDeviceId": args["SensorsDeviceId"].replace("'", ";"),
             "ConnectionString": hashlib.sha256((args["Location"].replace("'", ";").encode('utf-8') + str(sensors_table["NewId"]).encode('utf-8'))).hexdigest(),
-            "Protocol": args["Protocol"].replace("'", ";"),
             "Datatype": args["Datatype"].replace("'", ";"),
             "OwnerId": get_jwt_claims()["id"]
         }
@@ -87,7 +85,7 @@ class GetSingleSensor(Resource):
         else:
             return {"message": "error device not found"}
 
-        filter = "owner_id eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
+        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
         sensors = table_service.query_entities('sensors', filter=filter)
         if len(list(sensors)) > 0:

@@ -12,6 +12,7 @@ parser.add_argument('EdgeDeviceId', type=str, required=False)
 parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Location', type=str, required=False)
 parser.add_argument('Description', type=str, required=False)
+parser.add_argument('Protocol', type=str, required=False)
 
 
 class SensorsDevices(Resource):
@@ -40,6 +41,7 @@ class SensorsDevices(Resource):
             "RowKey": str(sensorsdevices_table["NewId"]),
             "Name": args["Name"].replace("'", ";"),
             "Description": args["Description"].replace("'", ";"),
+            "Protocol": args["Protocol"].replace("'", ";"),
             "EdgeDeviceId": args["EdgeDeviceId"].replace("'", ";"),
             "OwnerId": get_jwt_claims()["id"]
         }
@@ -76,12 +78,12 @@ class GetSingleSensorsDevice(Resource):
 
         if id:
             specification = id
-            searcher = "DeviceId"
+            searcher = "RowKey"
 
         else:
             return {"message": "error device not found"}
 
-        filter = "owner_id eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
+        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
         sensordevices = table_service.query_entities('sensorsdevices', filter=filter)
         if len(list(sensordevices)) > 0:
@@ -89,5 +91,26 @@ class GetSingleSensorsDevice(Resource):
         else:
             return {"message": "error device not found"}
 
-        return {"message": "success", "sensorsdevice": list(sensordevices), "uri": request.base_url}
+        sensordevices["Timestamp"] = sensordevices["Timestamp"].isoformat()
+        return {"message": "success", "sensorsdevice": sensordevices, "uri": request.base_url}
 
+class GetEdgeSensorsDevices(Resource):
+    @jwt_required
+    def get(self):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+
+        filter = "OwnerId eq '{0}'".format(get_jwt_claims()["id"])
+
+        sensorsdevices = table_service.query_entities('sensorsdevices', filter=filter)
+        print(list(sensorsdevices))
+        if len(list(sensorsdevices)) > 0:
+            sensorsdevices = list(sensorsdevices)
+        else:
+            return {"message": "error device not found"}
+
+        for sensorsdevice in sensorsdevices:
+            sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
+
+        return {"message": "success", "sensorsdevices": list(sensorsdevices), "uri": request.base_url}
