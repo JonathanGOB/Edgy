@@ -7,6 +7,8 @@ from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
                                 get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
+import json
+
 
 
 parser = reqparse.RequestParser()
@@ -143,6 +145,8 @@ class GetUser(Resource):
         filter = "Email eq '{}'".format(get_jwt_claims()["email"])
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
-
-        return {"message": "success", "user": user}
+        timestamp = user["Timestamp"].isoformat()
+        print(user)
+        print(timestamp)
+        return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "Last_updated": timestamp}}
 

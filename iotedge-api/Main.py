@@ -27,7 +27,7 @@ def add_claims_to_access_token(identity):
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     storage = AzureTableStorage()
-    table_service = AzureTableStorage.get_table()
+    table_service = storage.get_table()
     jti = decrypted_token['jti']
     filter = "Token eq '{}'".format(jti)
     existence = table_service.query_entities('revokedtokens', filter=filter)
@@ -36,9 +36,10 @@ def check_if_token_in_blacklist(decrypted_token):
 
 api.add_resource(User.UserLogin, '/Api/V1/Login', endpoint='Login')
 api.add_resource(User.UserRegistration, '/Api/V1/Register', endpoint='Register')
-api.add_resource(User.TokenRefresh, 'Api/V1/RefreshToken', endpoint='RefreshToken')
-api.add_resource(User.UserLogoutAccess, 'Api/V1/Logout/Access', endpoint='Access')
-api.add_resource(User.UserLogoutRefresh, 'Api/V1/Logout/Refresh', endpoint='Refresh')
+api.add_resource(User.TokenRefresh, '/Api/V1/RefreshToken', endpoint='RefreshToken')
+api.add_resource(User.UserLogoutAccess, '/Api/V1/Logout/Access', endpoint='Access')
+api.add_resource(User.UserLogoutRefresh, '/Api/V1/Logout/Refresh', endpoint='Refresh')
+api.add_resource(User.GetUser, '/Api/V1/Account', endpoint='Account')
 
 
 if __name__ == '__main__':
