@@ -1,20 +1,21 @@
 import base64
+import datetime
+
 import bcrypt
 from azure.cosmosdb.table import Entity
-from flask_restful import Resource, reqparse
-from flask import jsonify
+from flask_restful import Resource, reqparse, fields
+from flask import jsonify, request
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
                                 get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
 import json
 
-
-
 parser = reqparse.RequestParser()
 parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Email', type=str, required=False)
 parser.add_argument('Password', type=str, required=False)
+
 
 class UserObject:
     def __init__(self, username, email, id):
@@ -22,12 +23,14 @@ class UserObject:
         self.email = email
         self.id = id
 
+
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
-        access_token = create_access_token(identity = current_user)
-        return {'access_token': access_token}
+        access_token = create_access_token(identity=current_user)
+        return {'access_token': access_token, "uri": request.base_url}
+
 
 class UserLogin(Resource):
     def get(self):
@@ -44,17 +47,19 @@ class UserLogin(Resource):
             if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
                 try:
                     userObject = UserObject(username=user["Name"], email=user["Email"], id=user["RowKey"])
-                    access_token = create_access_token(identity = userObject)
-                    refresh_token = create_refresh_token(identity = userObject)
+                    expires = datetime.timedelta(days=1)
+                    access_token = create_access_token(identity=userObject, expires_delta=expires)
+                    refresh_token = create_refresh_token(identity=userObject)
 
                     return {
                         'message': 'Logged in as {}'.format(user['Name']),
                         'access_token': access_token,
-                        'refresh_token': refresh_token
+                        'refresh_token': refresh_token,
+                        "uri": request.base_url
                     }
                 except Exception as e:
                     print(e)
-                    return {"message" : "something went wrong"}
+                    return {"message": "something went wrong"}
             else:
                 return {"message": "wrong password"}
 
@@ -68,17 +73,13 @@ class UserRegistration(Resource):
         filter = "PartitionKey eq 'users'"
         user_table = table_service.query_entities('rulers', filter=filter)
         user_table = list(user_table)[0]
-        print(user_table)
 
         user = Entity()
         user.PartitionKey = 'user'
         user.RowKey = str(user_table['NewId'])
-        user.Name =  args['Name']
+        user.Name = args['Name']
         user.Password = (bcrypt.hashpw(args["Password"].encode("utf-8"), Salt.salt)).decode('utf-8')
         user.Email = args['Email']
-
-        print(user)
-
         check = "Email eq '{}'".format(args["Email"])
 
         check_user = table_service.query_entities(
@@ -88,10 +89,11 @@ class UserRegistration(Resource):
             return {"message": "error email already used"}
 
         table_service.insert_entity('users', user)
-        ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'], "NewId": user_table["NewId"] + 1, "Size": user_table["Size"] + 1}
+        ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'],
+                       "NewId": user_table["NewId"] + 1, "Size": user_table["Size"] + 1}
         table_service.update_entity('rulers', ruler_users)
         user.Password = args["Password"]
-        return {"message": "success", "user": user}
+        return {"message": "success", "user": user, "uri": request.base_url}
 
 
 class UserLogoutAccess(Resource):
@@ -111,7 +113,7 @@ class UserLogoutAccess(Resource):
                                    "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
             table_service.update_entity('rulers', ruler_revokedtokens)
             table_service.insert_entity(revoked_token)
-            return {'message': 'Access token has been revoked'}
+            return {'message': 'Access token has been revoked', "uri": request.base_url}
         except:
             return {'message': 'Something went wrong'}
 
@@ -128,13 +130,15 @@ class UserLogoutRefresh(Resource):
 
         try:
             revoked_token = {"PartitionKey": "RefreshToken", "RowKey": revokedtokens_table["NewId"], "Token": jti}
-            ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'], "RowKey": revokedtokens_table['RowKey'],
-                           "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+            ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
+                                   "RowKey": revokedtokens_table['RowKey'],
+                                   "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
             table_service.update_entity('rulers', ruler_revokedtokens)
             table_service.insert_entity(revoked_token)
-            return {'message': 'Access token has been revoked'}
+            return {'message': 'Access token has been revoked', "uri": request.base_url}
         except:
             return {'message': 'Something went wrong'}
+
 
 class GetUser(Resource):
     @jwt_required
@@ -146,7 +150,5 @@ class GetUser(Resource):
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
-        print(user)
-        print(timestamp)
-        return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "Last_updated": timestamp}}
-
+        return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "Last_updated": timestamp,
+                                               "uri": request.base_url}}
