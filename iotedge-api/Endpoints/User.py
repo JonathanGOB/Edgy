@@ -6,7 +6,7 @@ from flask import jsonify
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
-                                get_jwt_identity, get_raw_jwt, get_jwt_claims)
+                                get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
 
 
 parser = reqparse.RequestParser()
@@ -15,9 +15,10 @@ parser.add_argument('Email', type=str, required=False)
 parser.add_argument('Password', type=str, required=False)
 
 class UserObject:
-    def __init__(self, username, email):
+    def __init__(self, username, email, id):
         self.username = username
         self.email = email
+        self.id = id
 
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
@@ -40,7 +41,7 @@ class UserLogin(Resource):
         if user:
             if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
                 try:
-                    userObject = UserObject(username=user["Name"], email=user["Email"])
+                    userObject = UserObject(username=user["Name"], email=user["Email"], id=user["RowKey"])
                     access_token = create_access_token(identity = userObject)
                     refresh_token = create_refresh_token(identity = userObject)
 
@@ -136,11 +137,10 @@ class UserLogoutRefresh(Resource):
 class GetUser(Resource):
     @jwt_required
     def get(self):
-        args = parser.parse_args()
         storage = AzureTableStorage()
         table_service = storage.get_table()
-
-        filter = "Email eq '{}'".format(get_jwt_claims())
+        verify_jwt_in_request()
+        filter = "Email eq '{}'".format(get_jwt_claims()["email"])
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
 

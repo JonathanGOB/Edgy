@@ -20,7 +20,8 @@ def user_identity_lookup(user):
 def add_claims_to_access_token(identity):
     return {
         'name': identity.username,
-        'email': identity.email
+        'email': identity.email,
+        'id': identity.id
     }
 
 @jwt.token_in_blacklist_loader
