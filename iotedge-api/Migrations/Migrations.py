@@ -47,7 +47,7 @@ sensors_table.NewId = 0
 sensors_table.Size = 0
 
 sensordevices_table = Entity()
-sensordevices_table.PartitionKey = 'sensordevices'
+sensordevices_table.PartitionKey = 'sensorsdevices'
 sensordevices_table.RowKey = '3'
 sensordevices_table.NewId = 0
 sensordevices_table.Size = 0

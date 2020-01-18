@@ -150,5 +150,5 @@ class GetUser(Resource):
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
-        return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "Last_updated": timestamp,
+        return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "UserId": user["RowKey"], "Last_updated": timestamp,
                                                "uri": request.base_url}}

@@ -8,19 +8,20 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 import json
 
 parser = reqparse.RequestParser()
+parser.add_argument('EdgeDeviceId', type=str, required=False)
 parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Location', type=str, required=False)
 parser.add_argument('Description', type=str, required=False)
 
 
-class EdgeDevices(Resource):
+class SensorsDevices(Resource):
     @jwt_required
     def get(self):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
         filter = "owner_id eq '{0}'".format(get_jwt_claims()["id"])
-        rows = table_service.query_entities('edgedevices', filter=filter)
+        rows = table_service.query_entities('sensorsdevices', filter=filter)
         return {"message": "success", "devices": list(rows), "uri": request.base_url}
 
     @jwt_required
@@ -30,38 +31,39 @@ class EdgeDevices(Resource):
         verify_jwt_in_request()
         args = parser.parse_args()
 
-        filter = "PartitionKey eq 'edgedevices'"
-        edgedevice_table = table_service.query_entities('rulers', filter=filter)
-        edgedevice_table = list(edgedevice_table)[0]
+        filter = "PartitionKey eq 'sensorsdevices'"
+        sensorsdevices_table = table_service.query_entities('rulers', filter=filter)
+        sensorsdevices_table = list(sensorsdevices_table)[0]
 
-        edgedevice_fields = {
+        sensordevices_fields = {
             "PartitionKey": args["Location"],
-            "RowKey": str(edgedevice_table["NewId"]),
+            "RowKey": str(sensorsdevices_table["NewId"]),
             "Name": args["Name"],
             "Description": args["Description"],
+            "EdgeDeviceId": args["EdgeDeviceId"],
             "OwnerId": get_jwt_claims()["id"]
         }
 
-        print(edgedevice_fields)
+        print(sensordevices_fields)
 
         check = "Name eq '{}'".format(args["Name"])
 
-        check_edgedevice = table_service.query_entities(
-            'edgedevices', filter=check)
+        check_sensorsdevices = table_service.query_entities(
+            'sensorsdevices', filter=check)
 
-        if len(list(check_edgedevice)) >= 1:
+        if len(list(check_sensorsdevices)) >= 1:
             return {"message": "error duplicate name"}
 
-        table_service.insert_entity('edgedevices', edgedevice_fields)
-        ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'], "RowKey": edgedevice_table['RowKey'],
-                             "NewId": edgedevice_table["NewId"] + 1, "Size": edgedevice_table["Size"] + 1}
-        print(ruler_edgedevices)
-        table_service.update_entity('rulers', ruler_edgedevices)
+        table_service.insert_entity('sensorsdevices', sensordevices_fields)
+        ruler_sensordevices = {"PartitionKey": sensorsdevices_table['PartitionKey'], "RowKey": sensorsdevices_table['RowKey'],
+                             "NewId": sensorsdevices_table["NewId"] + 1, "Size": sensorsdevices_table["Size"] + 1}
+        print(ruler_sensordevices)
+        table_service.update_entity('rulers', ruler_sensordevices)
 
-        return {"message": "success", "edgedevice": edgedevice_fields}
+        return {"message": "success", "sensorsdevice": sensordevices_fields}
 
 
-class GetSingleEdgeDevice(Resource):
+class GetSingleSensorsDevice(Resource):
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()
@@ -81,11 +83,11 @@ class GetSingleEdgeDevice(Resource):
 
         filter = "owner_id eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
-        edgedevice = table_service.query_entities('edgedevices', filter=filter)
-        if len(list(edgedevice)) > 0:
-            edgedevice = list(edgedevice)[0]
+        sensordevices = table_service.query_entities('sensorsdevices', filter=filter)
+        if len(list(sensordevices)) > 0:
+            edgedevice = list(sensordevices)[0]
         else:
             return {"message": "error device not found"}
 
-        return {"message": "success", "devices": list(edgedevice), "uri": request.base_url}
+        return {"message": "success", "sensorsdevice": list(sensordevices), "uri": request.base_url}
 
