@@ -192,17 +192,18 @@ class Account(Resource):
         args = parser.parse_args()
 
         if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
+            master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
+                           ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
+
+            filter = "OwnerId eq '{}'".format(get_jwt_claims()["id"])
+            rows = table_service.query_entities('edgedevices', filter=filter)
+            for row in rows:
+                cascader = Cascade(get_jwt_claims(), row["RowKey"], master_list)
+                edgedevice = cascader.delete()
+                if edgedevice == None:
+                    return {"message": "something went wrong"}
+
             table_service.delete_entity('users', user["PartitionKey"], user["RowKey"])
             return {"message": "succes deleted user {}".format(user["Name"])}
 
-        master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
-                       ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
-
-        filter = "OwnerId eq '{}'".format(get_jwt_claims()["id"])
-        rows = table_service.query_entities('edgedevices', filter=filter)
-        for row in rows:
-            cascader = Cascade(get_jwt_claims(), row["RowKey"], master_list)
-            edgedevice = cascader.delete()
-            if edgedevice == None:
-                return {"message": "something went wrong"}
         return {"message": "wrong password"}
