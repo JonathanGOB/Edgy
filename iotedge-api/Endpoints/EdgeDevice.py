@@ -117,9 +117,9 @@ class SingleEdgeDevice(Resource):
         else:
             return {"message": "error device not found"}
 
-        edgedevice["Name"] = args["Name"]
-        edgedevice["Location"] = args["Location"]
-        edgedevice["Description"] = args["Description"]
+        edgedevice["Name"] = args["Name"].replace("'", ";")
+        edgedevice["PartitionKey"] = args["Location"].replace("'", ";")
+        edgedevice["Description"] = args["Description"].replace("'", ";")
         del edgedevice["etag"]
 
         table_service.update_entity('edgedevices', edgedevice)

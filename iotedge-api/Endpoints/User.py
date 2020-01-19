@@ -45,7 +45,7 @@ class UserLogin(Resource):
         if not user:
             return {"message": "email {} doesn't exist".format(args['Email'])}
         if user:
-            if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
+            if bcrypt.checkpw(args['Password'].encode("utf-8").replace("'", ";"), user['Password'].encode("utf-8")):
                 try:
                     userObject = UserObject(username=user["Name"], email=user["Email"], id=user["RowKey"])
                     expires = datetime.timedelta(days=1)
@@ -78,9 +78,9 @@ class UserRegistration(Resource):
         user = Entity()
         user.PartitionKey = 'user'
         user.RowKey = str(user_table['NewId'])
-        user.Name = args['Name']
+        user.Name = args['Name'].replace("'", ";")
         user.Password = (bcrypt.hashpw(args["Password"].encode("utf-8"), Salt.salt)).decode('utf-8')
-        user.Email = args['Email']
+        user.Email = args['Email'].replace("'", ";")
         check = "Email eq '{}'".format(args["Email"])
 
         check_user = table_service.query_entities(
@@ -168,9 +168,9 @@ class Account(Resource):
         args = parser.parse_args()
 
         if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
-            user["Name"] = args["Name"]
-            user["Email"] = args["Email"]
-            user["Password"] = (bcrypt.hashpw(args["NewPassword"].encode("utf-8"), Salt.salt)).decode('utf-8')
+            user["Name"] = args["Name"].replace("'", ";")
+            user["Email"] = args["Email"].replace("'", ";")
+            user["Password"] = (bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
             del user["etag"]
             table_service.update_entity('users', user)
             user["Timestamp"] = user["Timestamp"].isoformat()
