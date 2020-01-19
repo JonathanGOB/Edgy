@@ -63,7 +63,7 @@ class EdgeDevices(Resource):
         return {"message": "success", "edgedevice": edgedevice_fields}
 
 
-class GetSingleEdgeDevice(Resource):
+class SingleEdgeDevice(Resource):
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()
@@ -91,4 +91,68 @@ class GetSingleEdgeDevice(Resource):
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
         return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
+
+    @jwt_required
+    def put(self, id):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+        args = parser.parse_args()
+
+        specification = None
+        searcher = None
+
+        if id:
+            specification = id.replace("'", ";")
+            searcher = "RowKey"
+
+        else:
+            return {"message": "error device not found"}
+
+        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
+
+        edgedevice = table_service.query_entities('edgedevices', filter=filter)
+        if len(list(edgedevice)) > 0:
+            edgedevice = list(edgedevice)[0]
+        else:
+            return {"message": "error device not found"}
+
+        edgedevice["Name"] = args["Name"]
+        edgedevice["Location"] = args["Location"]
+        edgedevice["Description"] = args["Description"]
+        del edgedevice["etag"]
+
+        table_service.update_entity('edgedevices', edgedevice)
+
+        edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
+        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
+
+    @jwt_required
+    def delete(self, id):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+        args = parser.parse_args()
+
+        specification = None
+        searcher = None
+
+        if id:
+            specification = id.replace("'", ";")
+            searcher = "RowKey"
+
+        else:
+            return {"message": "error device not found"}
+
+        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
+
+        edgedevice = table_service.query_entities('edgedevices', filter=filter)
+        if len(list(edgedevice)) > 0:
+            edgedevice = list(edgedevice)[0]
+        else:
+            return {"message": "error device not found"}
+
+        table_service.delete_entity('edgedevices', edgedevice["PartitionKey"], edgedevice["RowKey"])
+
+        return {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}
 

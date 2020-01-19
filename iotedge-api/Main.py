@@ -53,7 +53,7 @@ api.add_resource(User.UserLogoutRefresh, '/Api/V1/Logout/Refresh', endpoint='Ref
 api.add_resource(User.Account, '/Api/V1/Account', endpoint='Account')
 
 api.add_resource(EdgeDevice.EdgeDevices, '/Api/V1/EdgeDevices', endpoint="EdgeDevices")
-api.add_resource(EdgeDevice.GetSingleEdgeDevice, '/Api/V1/EdgeDevices/<string:id>')
+api.add_resource(EdgeDevice.SingleEdgeDevice, '/Api/V1/EdgeDevices/<string:id>')
 
 api.add_resource(SensorDevice.SensorsDevices, '/Api/V1/SensorsDevices', endpoint="SensorDevices")
 api.add_resource(SensorDevice.GetEdgeSensorsDevices, '/Api/V1/EdgeDevices/SensorsDevices')
