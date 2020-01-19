@@ -15,6 +15,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Email', type=str, required=False)
 parser.add_argument('Password', type=str, required=False)
+parser.add_argument('NewPassword', type=str, required=False)
 
 
 class UserObject:
@@ -142,15 +143,53 @@ class UserLogoutRefresh(Resource):
             return {'message': 'Something went wrong'}
 
 
-class GetUser(Resource):
+class Account(Resource):
     @jwt_required
     def get(self):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
-        filter = "Email eq '{}'".format(get_jwt_claims()["email"])
+        filter = "RowKey eq '{}'".format(get_jwt_claims()["id"])
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
         return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "UserId": user["RowKey"], "Last_updated": timestamp,
                                                "uri": request.base_url}}
+
+    @jwt_required
+    def put(self):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+        filter = "RowKey eq '{}'".format(get_jwt_claims()["id"])
+        user = table_service.query_entities('users', filter=filter)
+        user = list(user)[0]
+
+        args = parser.parse_args()
+
+        if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
+            user["Name"] = args["Name"]
+            user["Email"] = args["Email"]
+            user["Password"] = (bcrypt.hashpw(args["NewPassword"].encode("utf-8"), Salt.salt)).decode('utf-8')
+            del user["etag"]
+            table_service.update_entity('users', user)
+            user["Timestamp"] = user["Timestamp"].isoformat()
+            return {"message":"succes", "user": user}
+
+        return {"message": "wrong password"}
+
+    def delete(self):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+        filter = "RowKey eq '{}'".format(get_jwt_claims()["id"])
+        user = table_service.query_entities('users', filter=filter)
+        user = list(user)[0]
+
+        args = parser.parse_args()
+
+        if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
+            table_service.delete_entity('users', user["PartitionKey"], user["RowKey"])
+            return {"message": "succes deleted user {}".format(user["Name"])}
+
+        return {"message": "wrong password"}
