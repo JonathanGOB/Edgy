@@ -141,7 +141,7 @@ class SingleSensorsDevice(Resource):
         storage = AzureTableStorage()
         verify_jwt_in_request()
 
-        master_list = [["EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
+        master_list = [["", "SensorsDeviceId", "ConnectionString"],
                        ["sensorsdevices", "sensors", "sensordata"]]
         cascader = Cascade(get_jwt_claims(), id, master_list)
         sensorsdevice = cascader.delete()

@@ -142,10 +142,60 @@ class SingleSensor(Resource):
         storage = AzureTableStorage()
         verify_jwt_in_request()
 
-        master_list = [["SensorsDeviceId", "ConnectionString"],
+        master_list = [["", "ConnectionString"],
                        ["sensors", "sensordata"]]
         cascader = Cascade(get_jwt_claims(), id, master_list)
         sensors = cascader.delete()
         if sensors == None:
             return {"message": "device not found"}
         return {"message": "success deleted sensors {}".format(sensors["Name"])}
+
+class GetEdgeDeviceSensors(Resource):
+    @jwt_required
+    def get(self, id):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+
+        filter = "OwnerId eq '{0}' and EdgeDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
+
+        sensorsdevices = table_service.query_entities('sensorsdevices', filter=filter)
+        print(list(sensorsdevices))
+        if len(list(sensorsdevices)) > 0:
+            sensorsdevices = list(sensorsdevices)
+        else:
+            return {"message": "error device not found"}
+
+        all_sensors = []
+        for sensorsdevice in sensorsdevices:
+            filter = "OwnerId eq '{0}' and SensorDeviceId and '{1}'".format(get_jwt_claims()["id"], sensorsdevice["RowKey"])
+            sensors = table_service.query_entities('sensors', filter=filter)
+            if len(list(sensors)) > 0:
+                for sensor in sensors:
+                    all_sensors.append(sensor)
+
+        for sensor in all_sensors:
+            sensor["Timestamp"] = sensor["Timestamp"].isoformat()
+
+        return {"message": "success", "sensors": all_sensors, "uri": request.base_url}
+
+class GetSensorDeviceSensors(Resource):
+    @jwt_required
+    def get(self, id):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+
+        filter = "OwnerId eq '{0}' and SensorsDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
+
+        sensors = table_service.query_entities('sensors', filter=filter)
+        print(list(sensors))
+        if len(list(sensors)) > 0:
+            sensors = list(sensors)
+        else:
+            return {"message": "error device not found"}
+
+        for sensor in sensors:
+            sensor["Timestamp"] = sensor["Timestamp"].isoformat()
+
+        return {"message": "success", "sensors": sensors, "uri": request.base_url}
