@@ -31,7 +31,7 @@ class Sensors(Resource):
         rows = table_service.query_entities('sensors', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "sensors": list(rows), "uri": request.base_url}
+        return {"message": "success", "sensors": list(rows), "uri": request.base_url}, 200
 
     # Post sensor
     @jwt_required
@@ -45,17 +45,20 @@ class Sensors(Resource):
         sensors_table = table_service.query_entities('rulers', filter=filter)
         sensors_table = list(sensors_table)[0]
 
-        sensors_fields = {
-            "PartitionKey": args["Location"].replace("'", ";"),
-            "RowKey": str(sensors_table["NewId"]),
-            "Name": args["Name"].replace("'", ";"),
-            "Description": args["Description"].replace("'", ";"),
-            "SensorsDeviceId": args["SensorsDeviceId"].replace("'", ";"),
-            "ConnectionString": hashlib.sha256((args["Location"].replace("'", ";").encode('utf-8') + str(
-                sensors_table["NewId"]).encode('utf-8'))).hexdigest(),
-            "Datatype": args["Datatype"].replace("'", ";"),
-            "OwnerId": get_jwt_claims()["id"]
-        }
+        try:
+            sensors_fields = {
+                "PartitionKey": args["Location"].replace("'", ";"),
+                "RowKey": str(sensors_table["NewId"]),
+                "Name": args["Name"].replace("'", ";"),
+                "Description": args["Description"].replace("'", ";"),
+                "SensorsDeviceId": args["SensorsDeviceId"].replace("'", ";"),
+                "ConnectionString": hashlib.sha256((args["Location"].replace("'", ";").encode('utf-8') + str(
+                    sensors_table["NewId"]).encode('utf-8'))).hexdigest(),
+                "Datatype": args["Datatype"].replace("'", ";"),
+                "OwnerId": get_jwt_claims()["id"]
+            }
+        except:
+            return {"message": "fill all data"}, 400
 
         print(sensors_fields)
 
@@ -66,7 +69,7 @@ class Sensors(Resource):
             'sensors', filter=check)
 
         if len(list(check_sensors)) >= 1:
-            return {"message": "error duplicate name"}
+            return {"message": "error duplicate name"}, 400
 
         table_service.insert_entity('sensors', sensors_fields)
         ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'], "RowKey": sensors_table['RowKey'],
@@ -74,7 +77,7 @@ class Sensors(Resource):
         print(ruler_sensors)
         table_service.update_entity('rulers', ruler_sensors)
 
-        return {"message": "success", "sensors": sensors_fields}
+        return {"message": "success", "sensors": sensors_fields}, 200
 
 
 class SingleSensor(Resource):
@@ -95,7 +98,7 @@ class SingleSensor(Resource):
             searcher = "RowKey"
 
         else:
-            return {"message": "error id not found"}
+            return {"message": "error id not found"}, 400
 
         filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
@@ -103,10 +106,10 @@ class SingleSensor(Resource):
         if len(list(sensor)) > 0:
             sensor = list(sensor)[0]
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
-        return {"message": "success", "sensor": sensor, "uri": request.base_url}
+        return {"message": "success", "sensor": sensor, "uri": request.base_url}, 200
 
     # Update Sensor by id
     @jwt_required
@@ -134,17 +137,20 @@ class SingleSensor(Resource):
         else:
             return {"message": "error device not found"}
 
-        sensor["SensorsDeviceId"] = args["SensorsDeviceId"].replace("'", ";")
-        sensor["Name"] = args["Name"].replace("'", ";")
-        sensor["PartitionKey"] = args["Location"].replace("'", ";")
-        sensor["Datatype"] = args["Datatype"].replace("'", ";")
-        sensor["Description"] = args["Description"].replace("'", ";")
-        del sensor["etag"]
+        try:
+            sensor["SensorsDeviceId"] = args["SensorsDeviceId"].replace("'", ";")
+            sensor["Name"] = args["Name"].replace("'", ";")
+            sensor["PartitionKey"] = args["Location"].replace("'", ";")
+            sensor["Datatype"] = args["Datatype"].replace("'", ";")
+            sensor["Description"] = args["Description"].replace("'", ";")
+            del sensor["etag"]
+        except:
+            return {"message": "fill all data"}, 400
 
         table_service.update_entity('sensors', sensor)
 
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
-        return {"message": "success", "sensor": sensor, "uri": request.base_url}
+        return {"message": "success", "sensor": sensor, "uri": request.base_url}, 200
 
     # Delete Sensor by id
     @jwt_required
@@ -157,8 +163,8 @@ class SingleSensor(Resource):
         cascader = Cascade(get_jwt_claims(), id, master_list)
         sensors = cascader.delete()
         if sensors == None:
-            return {"message": "device not found"}
-        return {"message": "success deleted sensors {}".format(sensors["Name"])}
+            return {"message": "device not found"}, 400
+        return {"message": "success deleted sensors {}".format(sensors["Name"])}, 200
 
 
 class GetEdgeDeviceSensors(Resource):
@@ -177,7 +183,7 @@ class GetEdgeDeviceSensors(Resource):
         if len(list(sensorsdevices)) > 0:
             sensorsdevices = list(sensorsdevices)
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         all_sensors = []
         for sensorsdevice in sensorsdevices:
@@ -191,7 +197,7 @@ class GetEdgeDeviceSensors(Resource):
         for sensor in all_sensors:
             sensor["Timestamp"] = sensor["Timestamp"].isoformat()
 
-        return {"message": "success", "sensors": all_sensors, "uri": request.base_url}
+        return {"message": "success", "sensors": all_sensors, "uri": request.base_url}, 200
 
 
 class GetSensorDeviceSensors(Resource):
@@ -210,9 +216,9 @@ class GetSensorDeviceSensors(Resource):
         if len(list(sensors)) > 0:
             sensors = list(sensors)
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         for sensor in sensors:
             sensor["Timestamp"] = sensor["Timestamp"].isoformat()
 
-        return {"message": "success", "sensors": sensors, "uri": request.base_url}
+        return {"message": "success", "sensors": sensors, "uri": request.base_url}, 200

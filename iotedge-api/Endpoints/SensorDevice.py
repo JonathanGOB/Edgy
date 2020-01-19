@@ -30,7 +30,7 @@ class SensorsDevices(Resource):
         rows = table_service.query_entities('sensorsdevices', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "sensorsdevices": list(rows), "uri": request.base_url}
+        return {"message": "success", "sensorsdevices": list(rows), "uri": request.base_url}, 200
 
     # Post new SensorsDevice
     @jwt_required
@@ -44,15 +44,18 @@ class SensorsDevices(Resource):
         sensorsdevices_table = table_service.query_entities('rulers', filter=filter)
         sensorsdevices_table = list(sensorsdevices_table)[0]
 
-        sensordevices_fields = {
-            "PartitionKey": args["Location"].replace("'", ";"),
-            "RowKey": str(sensorsdevices_table["NewId"]),
-            "Name": args["Name"].replace("'", ";"),
-            "Description": args["Description"].replace("'", ";"),
-            "Protocol": args["Protocol"].replace("'", ";"),
-            "EdgeDeviceId": args["EdgeDeviceId"].replace("'", ";"),
-            "OwnerId": get_jwt_claims()["id"]
-        }
+        try:
+            sensordevices_fields = {
+                "PartitionKey": args["Location"].replace("'", ";"),
+                "RowKey": str(sensorsdevices_table["NewId"]),
+                "Name": args["Name"].replace("'", ";"),
+                "Description": args["Description"].replace("'", ";"),
+                "Protocol": args["Protocol"].replace("'", ";"),
+                "EdgeDeviceId": args["EdgeDeviceId"].replace("'", ";"),
+                "OwnerId": get_jwt_claims()["id"]
+            }
+        except:
+            return {"message": "fill all data"}, 400
 
         print(sensordevices_fields)
 
@@ -63,7 +66,7 @@ class SensorsDevices(Resource):
             'sensorsdevices', filter=check)
 
         if len(list(check_sensorsdevices)) >= 1:
-            return {"message": "error duplicate name"}
+            return {"message": "error duplicate name"}, 400
 
         table_service.insert_entity('sensorsdevices', sensordevices_fields)
         ruler_sensordevices = {"PartitionKey": sensorsdevices_table['PartitionKey'],
@@ -72,7 +75,7 @@ class SensorsDevices(Resource):
         print(ruler_sensordevices)
         table_service.update_entity('rulers', ruler_sensordevices)
 
-        return {"message": "success", "sensorsdevice": sensordevices_fields}
+        return {"message": "success", "sensorsdevice": sensordevices_fields}, 200
 
 
 class SingleSensorsDevice(Resource):
@@ -93,7 +96,7 @@ class SingleSensorsDevice(Resource):
             searcher = "RowKey"
 
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
@@ -101,10 +104,10 @@ class SingleSensorsDevice(Resource):
         if len(list(sensordevices)) > 0:
             sensordevices = list(sensordevices)[0]
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         sensordevices["Timestamp"] = sensordevices["Timestamp"].isoformat()
-        return {"message": "success", "sensorsdevice": sensordevices, "uri": request.base_url}
+        return {"message": "success", "sensorsdevice": sensordevices, "uri": request.base_url}, 200
 
     # Update SensorDevice by id
     @jwt_required
@@ -132,17 +135,19 @@ class SingleSensorsDevice(Resource):
         else:
             return {"message": "error device not found"}
 
-        sensorsdevice["EdgeDeviceId"] = args["EdgeDeviceId"].replace("'", ";")
-        sensorsdevice["Name"] = args["Name"].replace("'", ";")
-        sensorsdevice["PartitionKey"] = args["Location"].replace("'", ";")
-        sensorsdevice["Description"] = args["Description"].replace("'", ";")
-        sensorsdevice["Protocol"] = args["Protocol"].replace("'", ";")
-        del sensorsdevice["etag"]
-
+        try:
+            sensorsdevice["EdgeDeviceId"] = args["EdgeDeviceId"].replace("'", ";")
+            sensorsdevice["Name"] = args["Name"].replace("'", ";")
+            sensorsdevice["PartitionKey"] = args["Location"].replace("'", ";")
+            sensorsdevice["Description"] = args["Description"].replace("'", ";")
+            sensorsdevice["Protocol"] = args["Protocol"].replace("'", ";")
+            del sensorsdevice["etag"]
+        except:
+            return {"message":"fill all data"}, 400
         table_service.update_entity('sensorsdevices', sensorsdevice)
 
         sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
-        return {"message": "success", "sensorsdevice": sensorsdevice, "uri": request.base_url}
+        return {"message": "success", "sensorsdevice": sensorsdevice, "uri": request.base_url}, 200
 
     # Delete SensorDevice and all the children of the SensorDevice
     @jwt_required
@@ -155,8 +160,8 @@ class SingleSensorsDevice(Resource):
         cascader = Cascade(get_jwt_claims(), id, master_list)
         sensorsdevice = cascader.delete()
         if sensorsdevice == None:
-            return {"message": "device not found"}
-        return {"message": "success deleted sensordevice {}".format(sensorsdevice["Name"])}
+            return {"message": "device not found"}, 400
+        return {"message": "success deleted sensordevice {}".format(sensorsdevice["Name"])}, 200
 
 
 class GetEdgeSensorsDevices(Resource):
@@ -175,9 +180,9 @@ class GetEdgeSensorsDevices(Resource):
         if len(list(sensorsdevices)) > 0:
             sensorsdevices = list(sensorsdevices)
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         for sensorsdevice in sensorsdevices:
             sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
 
-        return {"message": "success", "sensorsdevices": list(sensorsdevices), "uri": request.base_url}
+        return {"message": "success", "sensorsdevices": list(sensorsdevices), "uri": request.base_url}, 200

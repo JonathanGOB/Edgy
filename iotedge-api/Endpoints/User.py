@@ -32,7 +32,7 @@ class TokenRefresh(Resource):
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
-        return {'access_token': access_token, "uri": request.base_url}
+        return {'access_token': access_token, "uri": request.base_url}, 200
 
 
 class UserLogin(Resource):
@@ -45,7 +45,7 @@ class UserLogin(Resource):
         try:
             user = list(user)[0]
         except Exception as e:
-            return {"message": "email {} doesn't exist".format(args['Email'])}
+            return {"message": "email {} doesn't exist".format(args['Email'])}, 400
 
         if user:
             if bcrypt.checkpw(args['Password'].replace("'", ";").encode("utf-8"), user['Password'].encode("utf-8")):
@@ -60,12 +60,13 @@ class UserLogin(Resource):
                         'access_token': access_token,
                         'refresh_token': refresh_token,
                         "uri": request.base_url
-                    }
+                    }, 200
+
                 except Exception as e:
                     print(e)
-                    return {"message": "something went wrong"}
+                    return {"message": "something went wrong"}, 500
             else:
-                return {"message": "wrong password"}
+                return {"message": "wrong password"}, 400
 
 
 class UserRegistration(Resource):
@@ -78,26 +79,30 @@ class UserRegistration(Resource):
         user_table = table_service.query_entities('rulers', filter=filter)
         user_table = list(user_table)[0]
 
-        user = Entity()
-        user.PartitionKey = 'user'
-        user.RowKey = str(user_table['NewId'])
-        user.Name = args['Name'].replace("'", ";")
-        user.Password = (bcrypt.hashpw(args["Password"].encode("utf-8"), Salt.salt)).decode('utf-8')
-        user.Email = args['Email'].replace("'", ";")
-        check = "Email eq '{}'".format(args["Email"])
+        try:
+            user = Entity()
+            user.PartitionKey = 'user'
+            user.RowKey = str(user_table['NewId'])
+            user.Name = args['Name'].replace("'", ";")
+            user.Password = (bcrypt.hashpw(args["Password"].encode("utf-8"), Salt.salt)).decode('utf-8')
+            user.Email = args['Email'].replace("'", ";")
+            check = "Email eq '{}'".format(args["Email"])
 
-        check_user = table_service.query_entities(
-            'users', filter=check)
+            check_user = table_service.query_entities(
+                'users', filter=check)
+
+        except:
+            return {"message": "not everything filled"}, 400
 
         if len(list(check_user)) >= 1:
-            return {"message": "error email already used"}
+            return {"message": "error email already used"}, 400
 
         table_service.insert_entity('users', user)
         ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'],
                        "NewId": user_table["NewId"] + 1, "Size": user_table["Size"] + 1}
         table_service.update_entity('rulers', ruler_users)
         user.Password = args["Password"]
-        return {"message": "success", "user": user, "uri": request.base_url}
+        return {"message": "success", "user": user, "uri": request.base_url}, 200
 
 
 class UserLogoutAccess(Resource):
@@ -119,9 +124,9 @@ class UserLogoutAccess(Resource):
                                    "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
             table_service.update_entity('rulers', ruler_revokedtokens)
             table_service.insert_entity('revokedtokens', revoked_token)
-            return {'message': 'Access token has been revoked', "uri": request.base_url}
+            return {'message': 'Access token has been revoked', "uri": request.base_url}, 200
         except:
-            return {'message': 'Something went wrong'}
+            return {'message': 'Something went wrong'}, 500
 
 
 class UserLogoutRefresh(Resource):
@@ -141,9 +146,9 @@ class UserLogoutRefresh(Resource):
                                    "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
             table_service.update_entity('rulers', ruler_revokedtokens)
             table_service.insert_entity('revokedtokens', revoked_token)
-            return {'message': 'Access token has been revoked', "uri": request.base_url}
+            return {'message': 'Access token has been revoked', "uri": request.base_url}, 200
         except:
-            return {'message': 'Something went wrong'}
+            return {'message': 'Something went wrong'}, 500
 
 
 class Account(Resource):
@@ -157,7 +162,7 @@ class Account(Resource):
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
         return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "UserId": user["RowKey"], "Last_updated": timestamp,
-                                               "uri": request.base_url}}
+                                               "uri": request.base_url}}, 200
 
     @jwt_required
     def put(self):
@@ -171,15 +176,18 @@ class Account(Resource):
         args = parser.parse_args()
 
         if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
-            user["Name"] = args["Name"].replace("'", ";")
-            user["Email"] = args["Email"].replace("'", ";")
-            user["Password"] = (bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
-            del user["etag"]
-            table_service.update_entity('users', user)
-            user["Timestamp"] = user["Timestamp"].isoformat()
-            return {"message":"succes", "user": user}
+            try:
+                user["Name"] = args["Name"].replace("'", ";")
+                user["Email"] = args["Email"].replace("'", ";")
+                user["Password"] = (bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
+                del user["etag"]
+                table_service.update_entity('users', user)
+                user["Timestamp"] = user["Timestamp"].isoformat()
+                return {"message":"succes", "user": user, "uri": request.base_url}, 200
+            except:
+                return {"message": "not everything filled"}, 400
 
-        return {"message": "wrong password"}
+        return {"message": "wrong password", "uri": request.base_url}, 400
 
     def delete(self):
         storage = AzureTableStorage()
@@ -190,8 +198,7 @@ class Account(Resource):
         user = list(user)[0]
 
         args = parser.parse_args()
-
-        if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
+        if args['Password'] and bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")) :
             master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
                            ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
 
@@ -201,9 +208,9 @@ class Account(Resource):
                 cascader = Cascade(get_jwt_claims(), row["RowKey"], master_list)
                 edgedevice = cascader.delete()
                 if edgedevice == None:
-                    return {"message": "something went wrong"}
+                    return {"message": "something went wrong"}, 500
 
             table_service.delete_entity('users', user["PartitionKey"], user["RowKey"])
-            return {"message": "succes deleted user {}".format(user["Name"])}
+            return {"message": "succes deleted user {}".format(user["Name"]), "uri": request.base_url}, 200
 
-        return {"message": "wrong password"}
+        return {"message": "wrong password"}, 400

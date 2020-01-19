@@ -28,7 +28,7 @@ class EdgeDevices(Resource):
         rows = table_service.query_entities('edgedevices', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "edgedevices": list(rows), "uri": request.base_url}
+        return {"message": "success", "edgedevices": list(rows), "uri": request.base_url}, 200
 
     # Make new EdgeDevice
     @jwt_required
@@ -42,14 +42,17 @@ class EdgeDevices(Resource):
         edgedevice_table = table_service.query_entities('rulers', filter=filter)
         edgedevice_table = list(edgedevice_table)[0]
 
-        edgedevice_fields = {
-            "PartitionKey": args["Location"].replace("'", ";"),
-            "RowKey": str(edgedevice_table["NewId"]),
-            "Name": args["Name"].replace("'", ";"),
-            "Description": args["Description"].replace("'", ";"),
-            "OwnerId": get_jwt_claims()["id"]
-        }
+        try:
+            edgedevice_fields = {
+                "PartitionKey": args["Location"].replace("'", ";"),
+                "RowKey": str(edgedevice_table["NewId"]),
+                "Name": args["Name"].replace("'", ";"),
+                "Description": args["Description"].replace("'", ";"),
+                "OwnerId": get_jwt_claims()["id"]
+            }
 
+        except:
+            return {"message": "not everything filled"}, 400
         print(edgedevice_fields)
 
         check = "Name eq '{}'".format(args["Name"].replace("'", ";"))
@@ -58,7 +61,7 @@ class EdgeDevices(Resource):
             'edgedevices', filter=check)
 
         if len(list(check_edgedevice)) >= 1:
-            return {"message": "error duplicate name"}
+            return {"message": "error duplicate name"}, 400
 
         table_service.insert_entity('edgedevices', edgedevice_fields)
         ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'], "RowKey": edgedevice_table['RowKey'],
@@ -66,7 +69,7 @@ class EdgeDevices(Resource):
         print(ruler_edgedevices)
         table_service.update_entity('rulers', ruler_edgedevices)
 
-        return {"message": "success", "edgedevice": edgedevice_fields}
+        return {"message": "success", "edgedevice": edgedevice_fields}, 200
 
 
 class SingleEdgeDevice(Resource):
@@ -87,7 +90,7 @@ class SingleEdgeDevice(Resource):
             searcher = "RowKey"
 
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
@@ -95,10 +98,10 @@ class SingleEdgeDevice(Resource):
         if len(list(edgedevice)) > 0:
             edgedevice = list(edgedevice)[0]
         else:
-            return {"message": "error device not found"}
+            return {"message": "error device not found"}, 400
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
+        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}, 200
 
     # Update EdgeDevice by id
     @jwt_required
@@ -126,15 +129,17 @@ class SingleEdgeDevice(Resource):
         else:
             return {"message": "error device not found"}
 
-        edgedevice["Name"] = args["Name"].replace("'", ";")
-        edgedevice["PartitionKey"] = args["Location"].replace("'", ";")
-        edgedevice["Description"] = args["Description"].replace("'", ";")
-        del edgedevice["etag"]
-
+        try:
+            edgedevice["Name"] = args["Name"].replace("'", ";")
+            edgedevice["PartitionKey"] = args["Location"].replace("'", ";")
+            edgedevice["Description"] = args["Description"].replace("'", ";")
+            del edgedevice["etag"]
+        except:
+            return {"message": "fill all data"}, 400
         table_service.update_entity('edgedevices', edgedevice)
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
+        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}, 200
 
     # Delete EdgeDevice by id and all the children of the EdgeDevice
     @jwt_required
@@ -147,5 +152,5 @@ class SingleEdgeDevice(Resource):
         cascader = Cascade(get_jwt_claims(), id, master_list)
         edgedevice = cascader.delete()
         if edgedevice == None:
-            return {"message": "device not found"}
-        return {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}
+            return {"message": "device not found"}, 400
+        return {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}, 200
