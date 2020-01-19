@@ -1,6 +1,8 @@
 from azure.cosmosdb.table import Entity
 from flask_restful import Resource, reqparse
 from flask import jsonify, request
+
+from Helpers.Cascade import Cascade
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
@@ -50,7 +52,7 @@ class SensorsDevices(Resource):
 
         print(sensordevices_fields)
 
-        check = "Name eq '{}'".format(args["Name"].replace("'", ";"))
+        check = "Name eq '{}' and EdgeDeviceId eq '{}'".format(args["Name"].replace("'", ";"), args["EdgeDeviceId"].replace("'", ";"))
 
         check_sensorsdevices = table_service.query_entities(
             'sensorsdevices', filter=check)
@@ -137,30 +139,14 @@ class SingleSensorsDevice(Resource):
     @jwt_required
     def delete(self, id):
         storage = AzureTableStorage()
-        table_service = storage.get_table()
         verify_jwt_in_request()
-        args = parser.parse_args()
 
-        specification = None
-        searcher = None
-
-        if id:
-            specification = id.replace("'", ";")
-            searcher = "RowKey"
-
-        else:
-            return {"message": "error device not found"}
-
-        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
-
-        sensorsdevice = table_service.query_entities('sensorsdevices', filter=filter)
-        if len(list(sensorsdevice)) > 0:
-            sensorsdevice = list(sensorsdevice)[0]
-        else:
-            return {"message": "error device not found"}
-
-        table_service.delete_entity('sensorsdevices', sensorsdevice["PartitionKey"], sensorsdevice["RowKey"])
-
+        master_list = [["EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
+                       ["sensorsdevices", "sensors", "sensordata"]]
+        cascader = Cascade(get_jwt_claims(), id, master_list)
+        sensorsdevice = cascader.delete()
+        if sensorsdevice == None:
+            return {"message": "device not found"}
         return {"message": "success deleted sensordevice {}".format(sensorsdevice["Name"])}
 
 class GetEdgeSensorsDevices(Resource):

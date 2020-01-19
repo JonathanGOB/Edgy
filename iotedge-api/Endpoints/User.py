@@ -5,6 +5,8 @@ import bcrypt
 from azure.cosmosdb.table import Entity
 from flask_restful import Resource, reqparse, fields
 from flask import jsonify, request
+
+from Helpers.Cascade import Cascade
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
@@ -40,12 +42,13 @@ class UserLogin(Resource):
         table_service = storage.get_table()
         filter = "Email eq '{}'".format(args['Email'])
         user = table_service.query_entities('users', filter=filter)
-        user = list(user)[0]
-
-        if not user:
+        try:
+            user = list(user)[0]
+        except Exception as e:
             return {"message": "email {} doesn't exist".format(args['Email'])}
+
         if user:
-            if bcrypt.checkpw(args['Password'].encode("utf-8").replace("'", ";"), user['Password'].encode("utf-8")):
+            if bcrypt.checkpw(args['Password'].replace("'", ";").encode("utf-8"), user['Password'].encode("utf-8")):
                 try:
                     userObject = UserObject(username=user["Name"], email=user["Email"], id=user["RowKey"])
                     expires = datetime.timedelta(days=1)
@@ -192,4 +195,14 @@ class Account(Resource):
             table_service.delete_entity('users', user["PartitionKey"], user["RowKey"])
             return {"message": "succes deleted user {}".format(user["Name"])}
 
+        master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
+                       ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
+
+        filter = "OwnerId eq '{}'".format(get_jwt_claims()["id"])
+        rows = table_service.query_entities('edgedevices', filter=filter)
+        for row in rows:
+            cascader = Cascade(get_jwt_claims(), row["RowKey"], master_list)
+            edgedevice = cascader.delete()
+            if edgedevice == None:
+                return {"message": "something went wrong"}
         return {"message": "wrong password"}

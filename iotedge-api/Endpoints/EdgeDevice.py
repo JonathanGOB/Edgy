@@ -1,6 +1,8 @@
 from azure.cosmosdb.table import Entity
 from flask_restful import Resource, reqparse
 from flask import jsonify, request
+
+from Helpers.Cascade import Cascade
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
@@ -130,29 +132,13 @@ class SingleEdgeDevice(Resource):
     @jwt_required
     def delete(self, id):
         storage = AzureTableStorage()
-        table_service = storage.get_table()
         verify_jwt_in_request()
-        args = parser.parse_args()
 
-        specification = None
-        searcher = None
-
-        if id:
-            specification = id.replace("'", ";")
-            searcher = "RowKey"
-
-        else:
-            return {"message": "error device not found"}
-
-        filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
-
-        edgedevice = table_service.query_entities('edgedevices', filter=filter)
-        if len(list(edgedevice)) > 0:
-            edgedevice = list(edgedevice)[0]
-        else:
-            return {"message": "error device not found"}
-
-        table_service.delete_entity('edgedevices', edgedevice["PartitionKey"], edgedevice["RowKey"])
-
+        master_list = [["","EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
+                       ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
+        cascader = Cascade(get_jwt_claims(), id, master_list)
+        edgedevice = cascader.delete()
+        if edgedevice == None:
+            return {"message": "device not found"}
         return {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}
 
