@@ -53,7 +53,6 @@ class EdgeDevices(Resource):
 
         except:
             return {"message": "not everything filled"}, 400
-        print(edgedevice_fields)
 
         check = "Name eq '{}'".format(args["Name"].replace("'", ";"))
 
@@ -66,7 +65,6 @@ class EdgeDevices(Resource):
         table_service.insert_entity('edgedevices', edgedevice_fields)
         ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'], "RowKey": edgedevice_table['RowKey'],
                              "NewId": edgedevice_table["NewId"] + 1, "Size": edgedevice_table["Size"] + 1}
-        print(ruler_edgedevices)
         table_service.update_entity('rulers', ruler_edgedevices)
 
         return {"message": "success", "edgedevice": edgedevice_fields}, 200

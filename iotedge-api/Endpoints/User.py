@@ -62,8 +62,7 @@ class UserLogin(Resource):
                         "uri": request.base_url
                     }, 200
 
-                except Exception as e:
-                    print(e)
+                except:
                     return {"message": "something went wrong"}, 500
             else:
                 return {"message": "wrong password"}, 400
@@ -114,8 +113,6 @@ class UserLogoutAccess(Resource):
         filter = "PartitionKey eq 'revokedtokens'"
         revokedtokens_table = table_service.query_entities('rulers', filter=filter)
         revokedtokens_table = list(revokedtokens_table)[0]
-        print(revokedtokens_table)
-        print(jti)
 
         try:
             revoked_token = {"PartitionKey": "AccessToken", "RowKey": str(revokedtokens_table["NewId"]), "Token": jti}

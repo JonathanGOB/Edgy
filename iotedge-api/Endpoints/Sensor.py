@@ -60,7 +60,6 @@ class Sensors(Resource):
         except:
             return {"message": "fill all data"}, 400
 
-        print(sensors_fields)
 
         check = "Name eq '{}' and SensorsDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
                                                                   args["SensorsDeviceId"].replace("'", ";"))
@@ -74,7 +73,6 @@ class Sensors(Resource):
         table_service.insert_entity('sensors', sensors_fields)
         ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'], "RowKey": sensors_table['RowKey'],
                          "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
-        print(ruler_sensors)
         table_service.update_entity('rulers', ruler_sensors)
 
         return {"message": "success", "sensors": sensors_fields}, 200
@@ -179,7 +177,6 @@ class GetEdgeDeviceSensors(Resource):
         filter = "OwnerId eq '{0}' and EdgeDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
 
         sensorsdevices = table_service.query_entities('sensorsdevices', filter=filter)
-        print(list(sensorsdevices))
         if len(list(sensorsdevices)) > 0:
             sensorsdevices = list(sensorsdevices)
         else:
@@ -212,7 +209,6 @@ class GetSensorDeviceSensors(Resource):
         filter = "OwnerId eq '{0}' and SensorsDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
 
         sensors = table_service.query_entities('sensors', filter=filter)
-        print(list(sensors))
         if len(list(sensors)) > 0:
             sensors = list(sensors)
         else:

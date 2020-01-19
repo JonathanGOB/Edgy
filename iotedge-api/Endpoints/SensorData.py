@@ -49,12 +49,10 @@ class SensorData(Resource):
         except:
             return {"message": "fill all data"}, 400
 
-        print(sensors_fields)
 
         table_service.insert_entity('sensors', sensors_fields)
         ruler_sensors = {"PartitionKey": sensordata_table['PartitionKey'], "RowKey": sensordata_table['RowKey'],
                          "NewId": sensordata_table["NewId"] + 1, "Size": sensordata_table["Size"] + 1}
-        print(ruler_sensors)
         table_service.update_entity('rulers', ruler_sensors)
 
         return {"message": "success", "sensordata": sensors_fields}, 200
