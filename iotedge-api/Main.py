@@ -56,7 +56,7 @@ api.add_resource(EdgeDevice.EdgeDevices, '/Api/V1/EdgeDevices', endpoint="EdgeDe
 api.add_resource(EdgeDevice.SingleEdgeDevice, '/Api/V1/EdgeDevices/<string:id>')
 
 api.add_resource(SensorDevice.SensorsDevices, '/Api/V1/SensorsDevices', endpoint="SensorDevices")
-api.add_resource(SensorDevice.GetEdgeSensorsDevices, '/Api/V1/EdgeDevices/SensorsDevices')
+api.add_resource(SensorDevice.GetEdgeSensorsDevices, '/Api/V1/<string:id>/SensorsDevices')
 api.add_resource(SensorDevice.SingleSensorsDevice, '/Api/V1/SensorsDevices/<string:id>')
 
 api.add_resource(Sensor.Sensors, '/Api/V1/Sensors', endpoint="Sensors")

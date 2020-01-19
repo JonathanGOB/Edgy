@@ -165,12 +165,12 @@ class SingleSensorsDevice(Resource):
 
 class GetEdgeSensorsDevices(Resource):
     @jwt_required
-    def get(self):
+    def get(self, id):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
 
-        filter = "OwnerId eq '{0}'".format(get_jwt_claims()["id"])
+        filter = "OwnerId eq '{0}' and EdgeDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
 
         sensorsdevices = table_service.query_entities('sensorsdevices', filter=filter)
         print(list(sensorsdevices))
