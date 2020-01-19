@@ -9,6 +9,7 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
                                 get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
 import json
 
+# Get data from url
 parser = reqparse.RequestParser()
 parser.add_argument('EdgeDeviceId', type=str, required=False)
 parser.add_argument('Name', type=str, required=False)
@@ -18,6 +19,8 @@ parser.add_argument('Protocol', type=str, required=False)
 
 
 class SensorsDevices(Resource):
+
+    # Get all SensorsDevices of the owner
     @jwt_required
     def get(self):
         storage = AzureTableStorage()
@@ -29,6 +32,7 @@ class SensorsDevices(Resource):
             row["Timestamp"] = row["Timestamp"].isoformat()
         return {"message": "success", "sensorsdevices": list(rows), "uri": request.base_url}
 
+    # Post new SensorsDevice
     @jwt_required
     def post(self):
         storage = AzureTableStorage()
@@ -52,7 +56,8 @@ class SensorsDevices(Resource):
 
         print(sensordevices_fields)
 
-        check = "Name eq '{}' and EdgeDeviceId eq '{}'".format(args["Name"].replace("'", ";"), args["EdgeDeviceId"].replace("'", ";"))
+        check = "Name eq '{}' and EdgeDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
+                                                               args["EdgeDeviceId"].replace("'", ";"))
 
         check_sensorsdevices = table_service.query_entities(
             'sensorsdevices', filter=check)
@@ -61,8 +66,9 @@ class SensorsDevices(Resource):
             return {"message": "error duplicate name"}
 
         table_service.insert_entity('sensorsdevices', sensordevices_fields)
-        ruler_sensordevices = {"PartitionKey": sensorsdevices_table['PartitionKey'], "RowKey": sensorsdevices_table['RowKey'],
-                             "NewId": sensorsdevices_table["NewId"] + 1, "Size": sensorsdevices_table["Size"] + 1}
+        ruler_sensordevices = {"PartitionKey": sensorsdevices_table['PartitionKey'],
+                               "RowKey": sensorsdevices_table['RowKey'],
+                               "NewId": sensorsdevices_table["NewId"] + 1, "Size": sensorsdevices_table["Size"] + 1}
         print(ruler_sensordevices)
         table_service.update_entity('rulers', ruler_sensordevices)
 
@@ -70,6 +76,8 @@ class SensorsDevices(Resource):
 
 
 class SingleSensorsDevice(Resource):
+
+    # Get SensorDevice by id
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()
@@ -98,7 +106,7 @@ class SingleSensorsDevice(Resource):
         sensordevices["Timestamp"] = sensordevices["Timestamp"].isoformat()
         return {"message": "success", "sensorsdevice": sensordevices, "uri": request.base_url}
 
-
+    # Update SensorDevice by id
     @jwt_required
     def put(self, id):
         storage = AzureTableStorage()
@@ -136,6 +144,7 @@ class SingleSensorsDevice(Resource):
         sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
         return {"message": "success", "sensorsdevice": sensorsdevice, "uri": request.base_url}
 
+    # Delete SensorDevice and all the children of the SensorDevice
     @jwt_required
     def delete(self, id):
         storage = AzureTableStorage()
@@ -149,7 +158,10 @@ class SingleSensorsDevice(Resource):
             return {"message": "device not found"}
         return {"message": "success deleted sensordevice {}".format(sensorsdevice["Name"])}
 
+
 class GetEdgeSensorsDevices(Resource):
+
+    # Get all SensorsDevices from EdgeDevice
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()

@@ -10,6 +10,7 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
 import json
 import hashlib
 
+# Get data from url
 parser = reqparse.RequestParser()
 parser.add_argument('SensorsDeviceId', type=str, required=False)
 parser.add_argument('Location', type=str, required=False)
@@ -19,6 +20,8 @@ parser.add_argument('Description', type=str, required=False)
 
 
 class Sensors(Resource):
+
+    # Get all Sensors from owner
     @jwt_required
     def get(self):
         storage = AzureTableStorage()
@@ -30,6 +33,7 @@ class Sensors(Resource):
             row["Timestamp"] = row["Timestamp"].isoformat()
         return {"message": "success", "sensors": list(rows), "uri": request.base_url}
 
+    # Post sensor
     @jwt_required
     def post(self):
         storage = AzureTableStorage()
@@ -47,14 +51,16 @@ class Sensors(Resource):
             "Name": args["Name"].replace("'", ";"),
             "Description": args["Description"].replace("'", ";"),
             "SensorsDeviceId": args["SensorsDeviceId"].replace("'", ";"),
-            "ConnectionString": hashlib.sha256((args["Location"].replace("'", ";").encode('utf-8') + str(sensors_table["NewId"]).encode('utf-8'))).hexdigest(),
+            "ConnectionString": hashlib.sha256((args["Location"].replace("'", ";").encode('utf-8') + str(
+                sensors_table["NewId"]).encode('utf-8'))).hexdigest(),
             "Datatype": args["Datatype"].replace("'", ";"),
             "OwnerId": get_jwt_claims()["id"]
         }
 
         print(sensors_fields)
 
-        check = "Name eq '{}' and SensorsDeviceId eq '{}'".format(args["Name"].replace("'", ";"), args["SensorsDeviceId"].replace("'", ";"))
+        check = "Name eq '{}' and SensorsDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
+                                                                  args["SensorsDeviceId"].replace("'", ";"))
 
         check_sensors = table_service.query_entities(
             'sensors', filter=check)
@@ -64,7 +70,7 @@ class Sensors(Resource):
 
         table_service.insert_entity('sensors', sensors_fields)
         ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'], "RowKey": sensors_table['RowKey'],
-                             "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
+                         "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
         print(ruler_sensors)
         table_service.update_entity('rulers', ruler_sensors)
 
@@ -72,6 +78,8 @@ class Sensors(Resource):
 
 
 class SingleSensor(Resource):
+
+    # Get Sensor by id
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()
@@ -100,6 +108,7 @@ class SingleSensor(Resource):
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
         return {"message": "success", "sensor": sensor, "uri": request.base_url}
 
+    # Update Sensor by id
     @jwt_required
     def put(self, id):
         storage = AzureTableStorage()
@@ -119,7 +128,7 @@ class SingleSensor(Resource):
 
         filter = "OwnerId eq '{0}' and {1} eq '{2}'".format(get_jwt_claims()["id"], searcher, specification)
 
-        sensor= table_service.query_entities('sensors', filter=filter)
+        sensor = table_service.query_entities('sensors', filter=filter)
         if len(list(sensor)) > 0:
             sensor = list(sensor)[0]
         else:
@@ -137,6 +146,7 @@ class SingleSensor(Resource):
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
         return {"message": "success", "sensor": sensor, "uri": request.base_url}
 
+    # Delete Sensor by id
     @jwt_required
     def delete(self, id):
         storage = AzureTableStorage()
@@ -150,7 +160,10 @@ class SingleSensor(Resource):
             return {"message": "device not found"}
         return {"message": "success deleted sensors {}".format(sensors["Name"])}
 
+
 class GetEdgeDeviceSensors(Resource):
+
+    # Get all Sensors by EdgeDeviceId
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()
@@ -168,7 +181,8 @@ class GetEdgeDeviceSensors(Resource):
 
         all_sensors = []
         for sensorsdevice in sensorsdevices:
-            filter = "OwnerId eq '{0}' and SensorDeviceId and '{1}'".format(get_jwt_claims()["id"], sensorsdevice["RowKey"])
+            filter = "OwnerId eq '{0}' and SensorDeviceId and '{1}'".format(get_jwt_claims()["id"],
+                                                                            sensorsdevice["RowKey"])
             sensors = table_service.query_entities('sensors', filter=filter)
             if len(list(sensors)) > 0:
                 for sensor in sensors:
@@ -179,7 +193,10 @@ class GetEdgeDeviceSensors(Resource):
 
         return {"message": "success", "sensors": all_sensors, "uri": request.base_url}
 
+
 class GetSensorDeviceSensors(Resource):
+
+    # Get all Sensors by SensorsDeviceId
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()

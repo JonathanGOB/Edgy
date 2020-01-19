@@ -9,6 +9,7 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
                                 get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
 import json
 
+# Get data from the url
 parser = reqparse.RequestParser()
 parser.add_argument('Name', type=str, required=False)
 parser.add_argument('Location', type=str, required=False)
@@ -16,6 +17,8 @@ parser.add_argument('Description', type=str, required=False)
 
 
 class EdgeDevices(Resource):
+
+    # Get all edgedevices of the owner
     @jwt_required
     def get(self):
         storage = AzureTableStorage()
@@ -27,6 +30,7 @@ class EdgeDevices(Resource):
             row["Timestamp"] = row["Timestamp"].isoformat()
         return {"message": "success", "edgedevices": list(rows), "uri": request.base_url}
 
+    # Make new EdgeDevice
     @jwt_required
     def post(self):
         storage = AzureTableStorage()
@@ -66,6 +70,8 @@ class EdgeDevices(Resource):
 
 
 class SingleEdgeDevice(Resource):
+
+    # Get EdgeDevice by id(RowKey)
     @jwt_required
     def get(self, id):
         storage = AzureTableStorage()
@@ -94,6 +100,7 @@ class SingleEdgeDevice(Resource):
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
         return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
 
+    # Update EdgeDevice by id
     @jwt_required
     def put(self, id):
         storage = AzureTableStorage()
@@ -129,16 +136,16 @@ class SingleEdgeDevice(Resource):
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
         return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}
 
+    # Delete EdgeDevice by id and all the children of the EdgeDevice
     @jwt_required
     def delete(self, id):
         storage = AzureTableStorage()
         verify_jwt_in_request()
 
-        master_list = [["","EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
+        master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
                        ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
         cascader = Cascade(get_jwt_claims(), id, master_list)
         edgedevice = cascader.delete()
         if edgedevice == None:
             return {"message": "device not found"}
         return {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}
-

@@ -53,6 +53,7 @@ class SensorData(Resource):
 
         return {"message": "success", "sensordata": sensors_fields}
 
+
 class SingleSensorData(Resource):
     @jwt_required
     def get(self, id):
@@ -145,3 +146,24 @@ class SingleSensorData(Resource):
         table_service.delete_entity('sensordata', sensordata["PartitionKey"], sensordata["RowKey"])
 
         return {"message": "success deleted sensordata {}".format(sensordata["Name"])}
+
+class GetSensorSensorData(Resource):
+
+    # Get all SensorData from Sensor
+    @jwt_required
+    def get(self, id):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+
+        filter = "OwnerId eq '{0}' and PartitionKey eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
+
+        sensordata = table_service.query_entities('sensordata', filter=filter)
+        if len(list(sensordata)) > 0:
+            sensordata = list(sensordata)[0]
+        else:
+            return {"message": "error data not found"}
+
+        sensordata["Timestamp"] = sensordata["Timestamp"].isoformat()
+        return {"message": "success", "sensordata": sensordata, "uri": request.base_url}
+
