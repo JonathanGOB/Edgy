@@ -12,7 +12,7 @@ export default class User extends Model {
 
     static login(params) {
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.endpoints["login"]}`,
+            axios.post(`/Api/V1/${this.endpoints["login"]}`,
                 {
                     params: params,
                 })
@@ -28,7 +28,7 @@ export default class User extends Model {
 
     static register(params) {
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.endpoints["register"]}`,
+            axios.post(`/Api/V1/${this.endpoints["register"]}`,
                 {
                     params: params,
                 })
@@ -44,7 +44,7 @@ export default class User extends Model {
 
     static refreshtoken(params) {
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.endpoints["refreshtoken"]}`,
+            axios.post(`/Api/V1/${this.endpoints["refreshtoken"]}`,
                 {
                     params: params,
                 })
@@ -61,7 +61,7 @@ export default class User extends Model {
     static logout() {
         let return_json = {}
         let refresh = Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.endpoints["logout"][0]}`)
+            axios.post(`/Api/V1/${this.endpoints["logout"][0]}`)
                 .then(response => {
                     const model = new this(response.data.data);
                     resolve(model);
@@ -72,7 +72,7 @@ export default class User extends Model {
         });
 
         let access = Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.endpoints["logout"][1]}`)
+            axios.post(`/Api/V1/${this.endpoints["logout"][1]}`)
                 .then(response => {
                     const model = new this(response.data.data);
                     resolve(model);

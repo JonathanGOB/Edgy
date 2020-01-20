@@ -34,7 +34,7 @@ export default class Model{
 
     static delete(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.standardroute}/${id}`)
+            axios.delete(`/Api/V1/${this.standardroute}/${id}`)
                 .then(response => {
                     const model = new this(response.data.data);
                     resolve(model);
@@ -47,7 +47,7 @@ export default class Model{
 
     static update(id, params = {}){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.standardroute}/${id}`,
+            axios.put(`/Api/V1/${this.standardroute}/${id}`,
                 {
                     params: params,
                 })
