@@ -6,7 +6,7 @@ export default class Sensor extends Model {
 
     static getsensorsdevicesensors(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${id}/${this.endpoint}`)
+            axios.get(`/Api/V1/SensorsDevices/${id}/${this.endpoint}`)
                 .then(response => {
                     const model = new this(response.data.data);
                     resolve(model);
@@ -19,7 +19,7 @@ export default class Sensor extends Model {
 
     static getedgedevicesensors(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${id}/SensorsDevices/${this.endpoint}`)
+            axios.get(`/Api/V1/EdgeDevices/${id}${this.endpoint}`)
                 .then(response => {
                     const model = new this(response.data.data);
                     resolve(model);
