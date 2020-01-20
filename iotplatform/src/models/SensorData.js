@@ -4,9 +4,9 @@ import axios from "axios";
 export default class SensorData extends Model {
     static endpoint = "SensorData"
 
-    static getsensorsdevicesensordata(id){
+    static getsensorsdevicesensordata(connectionstring, id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${id}/${this.endpoint}`)
+            axios.get(`/Api/V1/${this.endpoint}/${connectionstring}/${id}`)
                 .then(response => {
                     const model = new this(response.data.data);
                     resolve(model);
@@ -16,6 +16,7 @@ export default class SensorData extends Model {
                 })
         });
     }
+    
 
     constructor() {
         super(SensorData.endpoint);
