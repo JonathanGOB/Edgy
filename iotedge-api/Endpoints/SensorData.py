@@ -50,9 +50,20 @@ class SensorData(Resource):
         verify_jwt_in_request()
         args = parser.parse_args()
 
-        filter = "PartitionKey eq 'sensordata'"
-        sensordata_table = table_service.query_entities('rulers', filter=filter)
-        sensordata_table = list(sensordata_table)[0]
+        isNew = False
+        while not isNew:
+            try:
+                filter = "PartitionKey eq 'sensordata'"
+                sensordata_table = table_service.query_entities('rulers', filter=filter)
+                sensordata_table = list(sensordata_table)[0]
+                ruler_sensordata = {"PartitionKey": sensordata_table['PartitionKey'],
+                                       "RowKey": sensordata_table['RowKey'],
+                                       "NewId": sensordata_table["NewId"] + 1, "Size": sensordata_table["Size"] - 1}
+                table_service.update_entity('rulers', ruler_sensordata, if_match=sensordata_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
+
 
         filter = "ConnectionString eq '{0}'".format(args["ConnectionString"])
         sensor = list(table_service.query_entities('sensors', filter=filter))[0]
@@ -69,9 +80,6 @@ class SensorData(Resource):
                     return {"message": "fill all data"}, 400
 
                 table_service.insert_entity('sensors', sensors_fields)
-                ruler_sensors = {"PartitionKey": sensordata_table['PartitionKey'], "RowKey": sensordata_table['RowKey'],
-                                 "NewId": sensordata_table["NewId"] + 1, "Size": sensordata_table["Size"] + 1}
-                table_service.update_entity('rulers', ruler_sensors)
 
                 return {"message": "success", "sensordata": sensors_fields}, 200
             else:
@@ -170,6 +178,20 @@ class SingleSensorData(Resource):
         table_service = storage.get_table()
         verify_jwt_in_request()
         args = parser.parse_args()
+
+        isNew = False
+        while not isNew:
+            try:
+                filter = "PartitionKey eq 'sensordata'"
+                sensordata_table = table_service.query_entities('rulers', filter=filter)
+                sensordata_table = list(sensordata_table)[0]
+                ruler_sensordata = {"PartitionKey": sensordata_table['PartitionKey'],
+                                    "RowKey": sensordata_table['RowKey'],
+                                    "NewId": sensordata_table["NewId"], "Size": sensordata_table["Size"] - 1}
+                table_service.update_entity('rulers', ruler_sensordata, if_match=sensordata_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
 
         specification = None
         searcher = None
