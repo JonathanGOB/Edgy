@@ -41,9 +41,20 @@ class Sensors(Resource):
         verify_jwt_in_request()
         args = parser.parse_args()
 
-        filter = "PartitionKey eq 'sensors'"
-        sensors_table = table_service.query_entities('rulers', filter=filter)
-        sensors_table = list(sensors_table)[0]
+        isNew = False
+        while not isNew:
+            try:
+                filter = "PartitionKey eq 'sensors'"
+                sensors_table = table_service.query_entities('rulers', filter=filter)
+                sensors_table = list(sensors_table)[0]
+                ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'],
+                                       "RowKey": sensors_table['RowKey'],
+                                       "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
+                table_service.update_entity('rulers', ruler_sensors, if_match=sensors_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
+
 
         try:
             sensors_fields = {
@@ -71,9 +82,6 @@ class Sensors(Resource):
             return {"message": "error duplicate name"}, 400
 
         table_service.insert_entity('sensors', sensors_fields)
-        ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'], "RowKey": sensors_table['RowKey'],
-                         "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
-        table_service.update_entity('rulers', ruler_sensors)
 
         return {"message": "success", "sensors": sensors_fields}, 200
 
@@ -155,6 +163,21 @@ class SingleSensor(Resource):
     def delete(self, id):
         storage = AzureTableStorage()
         verify_jwt_in_request()
+        table_service = storage.get_table()
+
+        isNew = False
+        while not isNew:
+            try:
+                filter = "PartitionKey eq 'sensors'"
+                sensors_table = table_service.query_entities('rulers', filter=filter)
+                sensors_table = list(sensors_table)[0]
+                ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'],
+                                       "RowKey": sensors_table['RowKey'],
+                                       "NewId": sensors_table["NewId"], "Size": sensors_table["Size"] - 1}
+                table_service.update_entity('rulers', ruler_sensors, if_match=sensors_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
 
         master_list = [["", "ConnectionString"],
                        ["sensors", "sensordata"]]

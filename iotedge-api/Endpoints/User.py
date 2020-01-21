@@ -75,8 +75,17 @@ class UserRegistration(Resource):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         filter = "PartitionKey eq 'users'"
-        user_table = table_service.query_entities('rulers', filter=filter)
-        user_table = list(user_table)[0]
+        isNew = False
+        while not isNew:
+            try:
+                user_table = table_service.query_entities('rulers', filter=filter)
+                user_table = list(user_table)[0]
+                ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'],
+                               "NewId": user_table["NewId"] + 1, "Size": user_table["Size"] + 1}
+                table_service.update_entity('rulers', ruler_users, if_match=user_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
 
         try:
             user = Entity()
@@ -96,10 +105,9 @@ class UserRegistration(Resource):
         if len(list(check_user)) >= 1:
             return {"message": "error email already used"}, 400
 
+
+
         table_service.insert_entity('users', user)
-        ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'],
-                       "NewId": user_table["NewId"] + 1, "Size": user_table["Size"] + 1}
-        table_service.update_entity('rulers', ruler_users)
         user.Password = args["Password"]
         return {"message": "success", "user": user, "uri": request.base_url}, 200
 
@@ -107,19 +115,26 @@ class UserRegistration(Resource):
 class UserLogoutAccess(Resource):
     @jwt_required
     def post(self):
+        global revokedtokens_table
         storage = AzureTableStorage()
         table_service = storage.get_table()
         jti = get_raw_jwt()['jti']
         filter = "PartitionKey eq 'revokedtokens'"
-        revokedtokens_table = table_service.query_entities('rulers', filter=filter)
-        revokedtokens_table = list(revokedtokens_table)[0]
+
+        isNew = False
+        while not isNew:
+            try:
+                revokedtokens_table = table_service.query_entities('rulers', filter=filter)
+                revokedtokens_table = list(revokedtokens_table)[0]
+                ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
+                                       "RowKey": revokedtokens_table['RowKey'],
+                                       "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+                table_service.update_entity('rulers', ruler_revokedtokens, if_match=revokedtokens_table["etag"])
+            except:
+                print("concurrency problems")
 
         try:
             revoked_token = {"PartitionKey": "AccessToken", "RowKey": str(revokedtokens_table["NewId"]), "Token": jti}
-            ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
-                                   "RowKey": revokedtokens_table['RowKey'],
-                                   "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
-            table_service.update_entity('rulers', ruler_revokedtokens)
             table_service.insert_entity('revokedtokens', revoked_token)
             return {'message': 'Access token has been revoked', "uri": request.base_url}, 200
         except:
@@ -133,15 +148,22 @@ class UserLogoutRefresh(Resource):
         table_service = storage.get_table()
         jti = get_raw_jwt()['jti']
         filter = "PartitionKey eq 'revokedtokens'"
-        revokedtokens_table = table_service.query_entities('revokedtokens', filter=filter)
-        revokedtokens_table = list(revokedtokens_table)[0]
+
+        isNew = False
+        while not isNew:
+            try:
+                revokedtokens_table = table_service.query_entities('revokedtokens', filter=filter)
+                revokedtokens_table = list(revokedtokens_table)[0]
+                ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
+                                       "RowKey": revokedtokens_table['RowKey'],
+                                       "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+                table_service.update_entity('rulers', ruler_revokedtokens, if_match=revokedtokens_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
 
         try:
             revoked_token = {"PartitionKey": "RefreshToken", "RowKey": revokedtokens_table["NewId"], "Token": jti}
-            ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
-                                   "RowKey": revokedtokens_table['RowKey'],
-                                   "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
-            table_service.update_entity('rulers', ruler_revokedtokens)
             table_service.insert_entity('revokedtokens', revoked_token)
             return {'message': 'Access token has been revoked', "uri": request.base_url}, 200
         except:
@@ -196,6 +218,19 @@ class Account(Resource):
 
         args = parser.parse_args()
         if args['Password'] and bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")) :
+            isNew = False
+            while not isNew:
+                try:
+                    filter = "PartitionKey eq 'users'"
+                    user_table = table_service.query_entities('rulers', filter=filter)
+                    user_table = list(user_table)[0]
+                    ruler_users = {"PartitionKey": user_table['PartitionKey'], "RowKey": user_table['RowKey'],
+                                   "NewId": user_table["NewId"], "Size": user_table["Size"] - 1}
+                    table_service.update_entity('rulers', ruler_users, if_match=user_table["etag"])
+                    isNew = True
+                except:
+                    print("concurrency problems")
+
             master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
                            ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
 

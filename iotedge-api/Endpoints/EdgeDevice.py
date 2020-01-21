@@ -38,9 +38,18 @@ class EdgeDevices(Resource):
         verify_jwt_in_request()
         args = parser.parse_args()
 
-        filter = "PartitionKey eq 'edgedevices'"
-        edgedevice_table = table_service.query_entities('rulers', filter=filter)
-        edgedevice_table = list(edgedevice_table)[0]
+        isNew = False
+        while not isNew:
+            try:
+                filter = "PartitionKey eq 'edgedevices'"
+                edgedevice_table = table_service.query_entities('rulers', filter=filter)
+                edgedevice_table = list(edgedevice_table)[0]
+                ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'], "RowKey": edgedevice_table['RowKey'],
+                               "NewId": edgedevice_table["NewId"] + 1, "Size": edgedevice_table["Size"] + 1}
+                table_service.update_entity('rulers', ruler_edgedevices, if_match=edgedevice_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
 
         try:
             edgedevice_fields = {
@@ -63,9 +72,6 @@ class EdgeDevices(Resource):
             return {"message": "error duplicate name"}, 400
 
         table_service.insert_entity('edgedevices', edgedevice_fields)
-        ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'], "RowKey": edgedevice_table['RowKey'],
-                             "NewId": edgedevice_table["NewId"] + 1, "Size": edgedevice_table["Size"] + 1}
-        table_service.update_entity('rulers', ruler_edgedevices)
 
         return {"message": "success", "edgedevice": edgedevice_fields}, 200
 
@@ -144,6 +150,21 @@ class SingleEdgeDevice(Resource):
     def delete(self, id):
         storage = AzureTableStorage()
         verify_jwt_in_request()
+        table_service = AzureTableStorage().get_table()
+
+        isNew = False
+        while not isNew:
+            try:
+                filter = "PartitionKey eq 'edgedevices'"
+                edgedevice_table = table_service.query_entities('rulers', filter=filter)
+                edgedevice_table = list(edgedevice_table)[0]
+                ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'],
+                                     "RowKey": edgedevice_table['RowKey'],
+                                     "NewId": edgedevice_table["NewId"], "Size": edgedevice_table["Size"] - 1}
+                table_service.update_entity('rulers', ruler_edgedevices, if_match=edgedevice_table["etag"])
+                isNew = True
+            except:
+                print("concurrency problems")
 
         master_list = [["", "EdgeDeviceId", "SensorsDeviceId", "ConnectionString"],
                        ["edgedevices", "sensorsdevices", "sensors", "sensordata"]]
