@@ -1,5 +1,7 @@
 from TableStorage.TableStorageConnection import AzureTableStorage
 import threading
+from datetime import datetime
+import pytz
 
 table_service = AzureTableStorage().get_table()
 
@@ -20,8 +22,11 @@ def loop():
                 sensors_fields = {
                     "PartitionKey": sensordata["PartitionKey"].replace("'", ";"),
                     "RowKey": str(sensordata_table["NewId"]),
-                    "Datavalue": sensordata["Datavalue"]
+                    "Datavalue": sensordata["Datavalue"],
+                    "Made_at": datetime.strptime(sensordata["Updated"], '%Y-%m-%d %H:%M:%S').astimezone(pytz.UTC)
                 }
+
+                print(sensors_fields)
 
                 table_service.insert_entity('sensordata', sensors_fields)
             except Exception as e:
