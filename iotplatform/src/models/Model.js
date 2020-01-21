@@ -10,7 +10,7 @@ export default class Model{
         return new Promise((resolve, reject) => {
             axios.get(`/Api/V1/${this.standardroute}/${id}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -23,7 +23,7 @@ export default class Model{
         return new Promise((resolve, reject) => {
             axios.get(`/Api/V1/${this.standardroute}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -36,7 +36,7 @@ export default class Model{
         return new Promise((resolve, reject) => {
             axios.delete(`/Api/V1/${this.standardroute}/${id}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -52,7 +52,7 @@ export default class Model{
                     params: params,
                 })
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {

@@ -3,12 +3,13 @@ import axios from "axios";
 
 export default class Sensor extends Model {
     static endpoint = "Sensors"
+    static relations = ["SensorDevices", "EdgeDevices"]
 
     static getsensorsdevicesensors(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/SensorsDevices/${id}/${this.endpoint}`)
+            axios.get(`/Api/V1/${this.relations[0]}/${id}/${this.endpoint}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -19,9 +20,9 @@ export default class Sensor extends Model {
 
     static getedgedevicesensors(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/EdgeDevices/${id}${this.endpoint}`)
+            axios.get(`/Api/V1/${this.relations[1]}/${id}${this.endpoint}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -29,6 +30,7 @@ export default class Sensor extends Model {
                 })
         });
     }
+
     constructor() {
         super(Sensor.endpoint);
     }

@@ -17,7 +17,7 @@ export default class User extends Model {
                     params: params,
                 })
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -33,7 +33,7 @@ export default class User extends Model {
                     params: params,
                 })
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -49,7 +49,7 @@ export default class User extends Model {
                     params: params,
                 })
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -63,7 +63,7 @@ export default class User extends Model {
         let refresh = Promise((resolve, reject) => {
             axios.post(`/Api/V1/${this.endpoints["logout"][0]}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
@@ -74,7 +74,7 @@ export default class User extends Model {
         let access = Promise((resolve, reject) => {
             axios.post(`/Api/V1/${this.endpoints["logout"][1]}`)
                 .then(response => {
-                    const model = new this(response.data.data);
+                    const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {

@@ -229,20 +229,20 @@ class GetSensorSensorData(Resource):
 
     # Get all SensorData from ConnectionString
     @jwt_required
-    def get(self, id, partitionkey):
+    def get(self, id):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
 
-        filter = "OwnerId eq '{0}' and RowKey eq '{1}' and PartitionKey '{2}'".format(get_jwt_claims()["id"],
-                                                                                      id.replace("'", ";"),
-                                                                                      partitionkey.replace("'", ";"))
+        filter = "OwnerId eq '{0}' and RowKey eq '{1}'".format(get_jwt_claims()["id"],
+                                                               id.replace("'", ";"))
 
         sensor = table_service.query_entities('sensors', filter=filter)
         if len(list(sensor)) > 0:
             sensor = list(sensor)[0]
         else:
             return {"message": "error data not found"}, 400
+
         connectionstring = sensor["ConnectionString"]
         filter = "PartitionKey eq '{0}'".format(connectionstring)
         points = table_service.query_entities('sensordata', filter=filter)
@@ -254,5 +254,33 @@ class GetSensorSensorData(Resource):
 
         for point in sensordata:
             point["Timestamp"] = point["Timestamp"].isoformat()
+
+
+class GetSensorDeviceSensorData(Resource):
+
+    @jwt_required
+    def get(self, id):
+        storage = AzureTableStorage()
+        table_service = storage.get_table()
+        verify_jwt_in_request()
+
+        filter = "OwnerId eq '{0}' and SensorDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
+        sensors = table_service.query_entities('sensors', filter=filter)
+        connectionstrings = []
+        if len(list(sensors)) > 0:
+            sensors = list(sensors)
+        else:
+            return {"message": "error data not found"}, 400
+
+        for sensor in sensors:
+            connectionstrings.append(sensor["ConnectionString"])
+
+        sensordata = []
+        for connectionstring in connectionstrings:
+            filter = "PartitionKey eq '{0}'".format(connectionstring)
+            _sensordata = list(table_service.query_entities('sensordata', filter=filter))
+            for _sensordata_ in _sensordata:
+                _sensordata_["Timestamp"] = _sensordata_["Timestamp"].isoformat()
+            sensordata.append(_sensordata)
 
         return {"message": "success", "data": {"sensordata": sensordata, "uri": request.base_url}}, 200
