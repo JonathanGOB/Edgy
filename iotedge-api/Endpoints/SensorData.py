@@ -21,7 +21,6 @@ class SensorData(Resource):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
-        args = parser.parse_args()
         filter = "OwnerId eq '{0}'".format(get_jwt_claims()["id"])
 
         connectionstrings = []
@@ -95,7 +94,7 @@ class SingleSensorData(Resource):
 
     # Get SensorData by id and partitionkey
     @jwt_required
-    def get(self, partitionkey, id):
+    def get(self, id):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
@@ -105,22 +104,26 @@ class SingleSensorData(Resource):
         searcher = None
 
         if id:
-            specification = id
+            specification = id.replace("'", ";")
             searcher = "RowKey"
 
         else:
             return {"message": "error id not found"}, 400
 
-        filter = "OwnerId eq {0} and PartitionKey eq {1}".format(get_jwt_claims()[0], partitionkey)
-        sensor = table_service.query_entities('sensors', filter=filter)
-        if len(list(sensor)) > 0:
-            filter = "PartitionKey eq '{0}' and {1} eq '{2}'".format(partitionkey, searcher, specification)
-            sensordata = table_service.query_entities('sensordata', filter=filter)
-            if len(list(sensordata)) > 0:
-                sensordata = list(sensordata)[0]
-            else:
-                return {"message": "error data not found"}, 400
+        filter = "RowKey eq '{0}'".format(specification)
+        sensordata = table_service.query_entities('sensordata', filter=filter)
 
+        if len(list(sensordata)) > 0:
+            sensordata = list(sensordata)[0]
+        else:
+            return {"message": "error data not found"}, 400
+
+        connectionstring = sensordata["ConnectionString"]
+        filter = "ConnectionString eq '{0}' and OwnerId eq '{1}'".format(connectionstring, get_jwt_claims()["id"])
+
+        sensor = table_service.query_entities('sensors', filter=filter)
+
+        if len(list(sensor)) > 0:
             sensordata["Timestamp"] = sensordata["Timestamp"].isoformat()
             return {"message": "success", "sensordata": sensordata, "uri": request.base_url}, 200
         else:
@@ -129,7 +132,7 @@ class SingleSensorData(Resource):
 
     # Update SensorData by id
     @jwt_required
-    def put(self, partitionkey, id):
+    def put(self, id):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
@@ -145,17 +148,20 @@ class SingleSensorData(Resource):
         else:
             return {"message": "error device not found"}
 
-        filter = "OwnerId eq {0} and PartitionKey eq {1}".format(get_jwt_claims()["id"], partitionkey)
+        filter = "RowKey eq '{0}'".format(specification)
+        sensordata = table_service.query_entities('sensordata', filter=filter)
+
+        if len(list(sensordata)) > 0:
+            sensordata = list(sensordata)[0]
+        else:
+            return {"message": "error data not found"}, 400
+
+        connectionstring = sensordata["ConnectionString"]
+        filter = "ConnectionString eq '{0}' and OwnerId eq '{1}'".format(connectionstring, get_jwt_claims()["id"])
+
         sensor = table_service.query_entities('sensors', filter=filter)
+
         if len(list(sensor)) > 0:
-            filter = "PartitionKey eq '{0}' and {1} eq '{2}'".format(partitionkey, searcher, specification)
-
-            sensordata = table_service.query_entities('sensordata', filter=filter)
-            if len(list(sensordata)) > 0:
-                sensordata = list(sensordata)[0]
-            else:
-                return {"message": "error device not found"}
-
             try:
                 sensordata["PartitionKey"] = args["ConnectionString"].replace("'", ";")
                 sensordata["Name"] = args["Name"].replace("'", ";")
@@ -173,7 +179,7 @@ class SingleSensorData(Resource):
 
     # Delete SensorData by id
     @jwt_required
-    def delete(self, partitionkey, id):
+    def delete(self, id):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
@@ -203,17 +209,20 @@ class SingleSensorData(Resource):
         else:
             return {"message": "error device not found"}, 400
 
-        filter = "OwnerId eq {0} and PartitionKey eq {1}".format(get_jwt_claims()["id"], partitionkey)
+        filter = "RowKey eq '{0}'".format(specification)
+        sensordata = table_service.query_entities('sensordata', filter=filter)
+
+        if len(list(sensordata)) > 0:
+            sensordata = list(sensordata)[0]
+        else:
+            return {"message": "error data not found"}, 400
+
+        connectionstring = sensordata["ConnectionString"]
+        filter = "ConnectionString eq '{0}' and OwnerId eq '{1}'".format(connectionstring, get_jwt_claims()["id"])
+
         sensor = table_service.query_entities('sensors', filter=filter)
+
         if len(list(sensor)) > 0:
-            filter = "PartitionKey eq '{0}' and {1} eq '{2}'".format(partitionkey, searcher, specification)
-
-            sensordata = table_service.query_entities('sensordata', filter=filter)
-            if len(list(sensordata)) > 0:
-                sensordata = list(sensordata)[0]
-            else:
-                return {"message": "error device not found"}, 400
-
             table_service.delete_entity('sensordata', sensordata["PartitionKey"], sensordata["RowKey"])
 
             return {"message": "success deleted sensordata {}".format(sensordata["Name"])}, 200

@@ -75,7 +75,7 @@ api.add_resource(Sensor.GetSensorDeviceSensors, '/Api/V1/SensorsDevices/<string:
 
 # SensorData endpoints
 api.add_resource(SensorData.SensorData, '/Api/V1/SensorData', endpoint="SensorData")
-api.add_resource(SensorData.SingleSensorData, '/Api/V1/SensorData/<string:partitionkey>/<string:id>')
+api.add_resource(SensorData.SingleSensorData, '/Api/V1/SensorData/<string:id>')
 api.add_resource(SensorData.GetSensorSensorData, '/Api/V1/SensorsDevices/<string:id>/SensorData/<string:partitionkey>')
 
 if __name__ == '__main__':
