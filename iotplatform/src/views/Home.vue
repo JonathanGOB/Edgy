@@ -12,7 +12,7 @@ import store from '../store'
 export default {
   name: 'home',
   components: {
-    
+
   }
 }
 </script>
