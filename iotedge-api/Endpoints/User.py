@@ -32,7 +32,7 @@ class TokenRefresh(Resource):
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
-        return {'access_token': access_token, "uri": request.base_url}, 200
+        return {"data": {'access_token': access_token, "uri": request.base_url}}, 200
 
 
 class UserLogin(Resource):
@@ -56,11 +56,13 @@ class UserLogin(Resource):
                     refresh_token = create_refresh_token(identity=userObject)
 
                     return {
-                        'message': 'Logged in as {}'.format(user['Name']),
-                        'access_token': access_token,
-                        'refresh_token': refresh_token,
-                        "uri": request.base_url
-                    }, 200
+                               "data": {
+                                   'message': 'Logged in as {}'.format(user['Name']),
+                                   'access_token': access_token,
+                                   'refresh_token': refresh_token,
+                                   "uri": request.base_url
+                               }
+                           }, 200
 
                 except:
                     return {"message": "something went wrong"}, 500
@@ -105,11 +107,9 @@ class UserRegistration(Resource):
         if len(list(check_user)) >= 1:
             return {"message": "error email already used"}, 400
 
-
-
         table_service.insert_entity('users', user)
         user.Password = args["Password"]
-        return {"message": "success", "user": user, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"user": user, "uri": request.base_url}}, 200
 
 
 class UserLogoutAccess(Resource):
@@ -128,7 +128,8 @@ class UserLogoutAccess(Resource):
                 revokedtokens_table = list(revokedtokens_table)[0]
                 ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
                                        "RowKey": revokedtokens_table['RowKey'],
-                                       "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+                                       "NewId": revokedtokens_table["NewId"] + 1,
+                                       "Size": revokedtokens_table["Size"] + 1}
                 table_service.update_entity('rulers', ruler_revokedtokens, if_match=revokedtokens_table["etag"])
             except:
                 print("concurrency problems")
@@ -156,7 +157,8 @@ class UserLogoutRefresh(Resource):
                 revokedtokens_table = list(revokedtokens_table)[0]
                 ruler_revokedtokens = {"PartitionKey": revokedtokens_table['PartitionKey'],
                                        "RowKey": revokedtokens_table['RowKey'],
-                                       "NewId": revokedtokens_table["NewId"] + 1, "Size": revokedtokens_table["Size"] + 1}
+                                       "NewId": revokedtokens_table["NewId"] + 1,
+                                       "Size": revokedtokens_table["Size"] + 1}
                 table_service.update_entity('rulers', ruler_revokedtokens, if_match=revokedtokens_table["etag"])
                 isNew = True
             except:
@@ -180,8 +182,10 @@ class Account(Resource):
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
-        return {"message": "success", "user": {"Name": user["Name"], "Email": user["Email"], "UserId": user["RowKey"], "Last_updated": timestamp,
-                                               "uri": request.base_url}}, 200
+        return {"message": "success",
+                "data": {"user": {"Name": user["Name"], "Email": user["Email"], "UserId": user["RowKey"],
+                                  "Last_updated": timestamp,
+                                  "uri": request.base_url}}}, 200
 
     @jwt_required
     def put(self):
@@ -198,11 +202,12 @@ class Account(Resource):
             try:
                 user["Name"] = args["Name"].replace("'", ";")
                 user["Email"] = args["Email"].replace("'", ";")
-                user["Password"] = (bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
+                user["Password"] = (
+                    bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
                 del user["etag"]
                 table_service.update_entity('users', user)
                 user["Timestamp"] = user["Timestamp"].isoformat()
-                return {"message":"succes", "user": user, "uri": request.base_url}, 200
+                return {"message": "succes", "data": {"user": user, "uri": request.base_url}}, 200
             except:
                 return {"message": "not everything filled"}, 400
 
@@ -217,7 +222,7 @@ class Account(Resource):
         user = list(user)[0]
 
         args = parser.parse_args()
-        if args['Password'] and bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")) :
+        if args['Password'] and bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
             isNew = False
             while not isNew:
                 try:

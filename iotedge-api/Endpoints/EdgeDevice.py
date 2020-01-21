@@ -28,7 +28,7 @@ class EdgeDevices(Resource):
         rows = table_service.query_entities('edgedevices', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "edgedevices": list(rows), "uri": request.base_url}, 200
+        return {"message": "success", "data": {"edgedevices": list(rows), "uri": request.base_url}}, 200
 
     # Make new EdgeDevice
     @jwt_required
@@ -44,8 +44,9 @@ class EdgeDevices(Resource):
                 filter = "PartitionKey eq 'edgedevices'"
                 edgedevice_table = table_service.query_entities('rulers', filter=filter)
                 edgedevice_table = list(edgedevice_table)[0]
-                ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'], "RowKey": edgedevice_table['RowKey'],
-                               "NewId": edgedevice_table["NewId"] + 1, "Size": edgedevice_table["Size"] + 1}
+                ruler_edgedevices = {"PartitionKey": edgedevice_table['PartitionKey'],
+                                     "RowKey": edgedevice_table['RowKey'],
+                                     "NewId": edgedevice_table["NewId"] + 1, "Size": edgedevice_table["Size"] + 1}
                 table_service.update_entity('rulers', ruler_edgedevices, if_match=edgedevice_table["etag"])
                 isNew = True
             except:
@@ -73,7 +74,7 @@ class EdgeDevices(Resource):
 
         table_service.insert_entity('edgedevices', edgedevice_fields)
 
-        return {"message": "success", "edgedevice": edgedevice_fields}, 200
+        return {"message": "success", "data": {"edgedevice": edgedevice_fields}}, 200
 
 
 class SingleEdgeDevice(Resource):
@@ -105,7 +106,7 @@ class SingleEdgeDevice(Resource):
             return {"message": "error device not found"}, 400
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"edgedevice": edgedevice, "uri": request.base_url}}, 200
 
     # Update EdgeDevice by id
     @jwt_required
@@ -143,7 +144,7 @@ class SingleEdgeDevice(Resource):
         table_service.update_entity('edgedevices', edgedevice)
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"edgedevice": edgedevice, "uri": request.base_url}}, 200
 
     # Delete EdgeDevice by id and all the children of the EdgeDevice
     @jwt_required

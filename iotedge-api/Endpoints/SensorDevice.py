@@ -30,7 +30,7 @@ class SensorsDevices(Resource):
         rows = table_service.query_entities('sensorsdevices', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "sensorsdevices": list(rows), "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensorsdevices": list(rows), "uri": request.base_url}}, 200
 
     # Post new SensorsDevice
     @jwt_required
@@ -47,12 +47,13 @@ class SensorsDevices(Resource):
                 sensorsdevices_table = table_service.query_entities('rulers', filter=filter)
                 sensorsdevices_table = list(sensorsdevices_table)[0]
                 ruler_sensordevices = {"PartitionKey": sensorsdevices_table['PartitionKey'],
-                                    "RowKey": sensorsdevices_table['RowKey'],
-                                    "NewId": sensorsdevices_table["NewId"] + 1, "Size": sensorsdevices_table["Size"] + 1}
+                                       "RowKey": sensorsdevices_table['RowKey'],
+                                       "NewId": sensorsdevices_table["NewId"] + 1,
+                                       "Size": sensorsdevices_table["Size"] + 1}
                 table_service.update_entity('rulers', ruler_sensordevices, if_match=sensorsdevices_table["etag"])
                 isNew = True
             except:
-                    print("concurrency problems")
+                print("concurrency problems")
 
         try:
             sensordevices_fields = {
@@ -67,7 +68,6 @@ class SensorsDevices(Resource):
         except:
             return {"message": "fill all data"}, 400
 
-
         check = "Name eq '{}' and EdgeDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
                                                                args["EdgeDeviceId"].replace("'", ";"))
 
@@ -79,7 +79,7 @@ class SensorsDevices(Resource):
 
         table_service.insert_entity('sensorsdevices', sensordevices_fields)
 
-        return {"message": "success", "sensorsdevice": sensordevices_fields}, 200
+        return {"message": "success", "data": {"sensorsdevice": sensordevices_fields}}, 200
 
 
 class SingleSensorsDevice(Resource):
@@ -111,7 +111,7 @@ class SingleSensorsDevice(Resource):
             return {"message": "error device not found"}, 400
 
         sensordevices["Timestamp"] = sensordevices["Timestamp"].isoformat()
-        return {"message": "success", "sensorsdevice": sensordevices, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensorsdevice": sensordevices, "uri": request.base_url}}, 200
 
     # Update SensorDevice by id
     @jwt_required
@@ -147,11 +147,11 @@ class SingleSensorsDevice(Resource):
             sensorsdevice["Protocol"] = args["Protocol"].replace("'", ";")
             del sensorsdevice["etag"]
         except:
-            return {"message":"fill all data"}, 400
+            return {"message": "fill all data"}, 400
         table_service.update_entity('sensorsdevices', sensorsdevice)
 
         sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
-        return {"message": "success", "sensorsdevice": sensorsdevice, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensorsdevice": sensorsdevice, "uri": request.base_url}}, 200
 
     # Delete SensorDevice and all the children of the SensorDevice
     @jwt_required
@@ -203,4 +203,4 @@ class GetEdgeSensorsDevices(Resource):
         for sensorsdevice in sensorsdevices:
             sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
 
-        return {"message": "success", "sensorsdevices": list(sensorsdevices), "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensorsdevices": sensorsdevices, "uri": request.base_url}}, 200

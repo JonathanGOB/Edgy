@@ -31,7 +31,7 @@ class Sensors(Resource):
         rows = table_service.query_entities('sensors', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "sensors": list(rows), "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensors": list(rows), "uri": request.base_url}}, 200
 
     # Post sensor
     @jwt_required
@@ -83,7 +83,7 @@ class Sensors(Resource):
 
         table_service.insert_entity('sensors', sensors_fields)
 
-        return {"message": "success", "sensors": sensors_fields}, 200
+        return {"message": "success", "data": {"sensors": sensors_fields}}, 200
 
 
 class SingleSensor(Resource):
@@ -115,7 +115,7 @@ class SingleSensor(Resource):
             return {"message": "error device not found"}, 400
 
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
-        return {"message": "success", "sensor": sensor, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensor": sensor, "uri": request.base_url}}, 200
 
     # Update Sensor by id
     @jwt_required
@@ -156,7 +156,7 @@ class SingleSensor(Resource):
         table_service.update_entity('sensors', sensor)
 
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
-        return {"message": "success", "sensor": sensor, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensor": sensor, "uri": request.base_url}}, 200
 
     # Delete Sensor by id
     @jwt_required
@@ -217,7 +217,7 @@ class GetEdgeDeviceSensors(Resource):
         for sensor in all_sensors:
             sensor["Timestamp"] = sensor["Timestamp"].isoformat()
 
-        return {"message": "success", "sensors": all_sensors, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensors": all_sensors, "uri": request.base_url}}, 200
 
 
 class GetSensorDeviceSensors(Resource):
@@ -240,4 +240,4 @@ class GetSensorDeviceSensors(Resource):
         for sensor in sensors:
             sensor["Timestamp"] = sensor["Timestamp"].isoformat()
 
-        return {"message": "success", "sensors": sensors, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensors": sensors, "uri": request.base_url}}, 200

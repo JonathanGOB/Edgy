@@ -15,7 +15,7 @@ parser.add_argument('ConnectionString', type=str, required=False)
 
 class SensorData(Resource):
 
-    #Get all SensorData by owner
+    # Get all SensorData by owner
     @jwt_required
     def get(self):
         storage = AzureTableStorage()
@@ -38,7 +38,7 @@ class SensorData(Resource):
 
         for row in sensordatas:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "sensordata": sensordatas, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensordata": sensordatas, "uri": request.base_url}}, 200
 
     # Post new SensorData
 
@@ -56,18 +56,17 @@ class SensorData(Resource):
                 sensordata_table = table_service.query_entities('rulers', filter=filter)
                 sensordata_table = list(sensordata_table)[0]
                 ruler_sensordata = {"PartitionKey": sensordata_table['PartitionKey'],
-                                       "RowKey": sensordata_table['RowKey'],
-                                       "NewId": sensordata_table["NewId"] + 1, "Size": sensordata_table["Size"] + 1}
+                                    "RowKey": sensordata_table['RowKey'],
+                                    "NewId": sensordata_table["NewId"] + 1, "Size": sensordata_table["Size"] + 1}
                 table_service.update_entity('rulers', ruler_sensordata, if_match=sensordata_table["etag"])
                 isNew = True
             except:
                 print("concurrency problems")
 
-
         filter = "ConnectionString eq '{0}'".format(args["ConnectionString"])
         sensor = list(table_service.query_entities('sensors', filter=filter))[0]
 
-        if(len(sensor) > 0):
+        if (len(sensor) > 0):
             if sensor["OwnerId"] == get_jwt_claims()["id"]:
                 try:
                     sensors_fields = {
@@ -80,14 +79,11 @@ class SensorData(Resource):
 
                 table_service.insert_entity('sensordata', sensors_fields)
 
-                return {"message": "success", "sensordata": sensors_fields}, 200
+                return {"message": "success", "data": {"sensordata": sensors_fields}}, 200
             else:
                 return {"message": "not your sensor"}, 400
         else:
             return {"message": "sensor not found"}, 400
-
-
-
 
 
 class SingleSensorData(Resource):
@@ -125,10 +121,9 @@ class SingleSensorData(Resource):
 
         if len(list(sensor)) > 0:
             sensordata["Timestamp"] = sensordata["Timestamp"].isoformat()
-            return {"message": "success", "sensordata": sensordata, "uri": request.base_url}, 200
+            return {"message": "success", "data": {"sensordata": sensordata, "uri": request.base_url}}, 200
         else:
             return {"message": "not your sensordata"}
-
 
     # Update SensorData by id
     @jwt_required
@@ -173,7 +168,7 @@ class SingleSensorData(Resource):
             table_service.update_entity('sensordata', sensordata)
 
             sensordata["Timestamp"] = sensordata["Timestamp"].isoformat()
-            return {"message": "success", "sensordata": sensordata, "uri": request.base_url}, 200
+            return {"message": "success", "data": {"sensordata": sensordata, "uri": request.base_url}}, 200
         else:
             return {"message": "not your sensordata"}
 
@@ -229,6 +224,7 @@ class SingleSensorData(Resource):
         else:
             return {"message": "not your sensordata"}
 
+
 class GetSensorSensorData(Resource):
 
     # Get all SensorData from ConnectionString
@@ -238,7 +234,9 @@ class GetSensorSensorData(Resource):
         table_service = storage.get_table()
         verify_jwt_in_request()
 
-        filter = "OwnerId eq '{0}' and RowKey eq '{1}' and PartitionKey '{2}'".format(get_jwt_claims()["id"], id.replace("'", ";"), partitionkey.replace("'", ";"))
+        filter = "OwnerId eq '{0}' and RowKey eq '{1}' and PartitionKey '{2}'".format(get_jwt_claims()["id"],
+                                                                                      id.replace("'", ";"),
+                                                                                      partitionkey.replace("'", ";"))
 
         sensor = table_service.query_entities('sensors', filter=filter)
         if len(list(sensor)) > 0:
@@ -257,4 +255,4 @@ class GetSensorSensorData(Resource):
         for point in sensordata:
             point["Timestamp"] = point["Timestamp"].isoformat()
 
-        return {"message": "success", "sensordata": sensordata, "uri": request.base_url}, 200
+        return {"message": "success", "data": {"sensordata": sensordata, "uri": request.base_url}}, 200
