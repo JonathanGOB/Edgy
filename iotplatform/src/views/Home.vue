@@ -1,7 +1,6 @@
 <template>
   <div class="home">
     <Sidebar>
-
     </Sidebar>
   </div>
 </template>

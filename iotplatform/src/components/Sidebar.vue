@@ -3,7 +3,7 @@
         <div class="vertical-nav bg-white" id="sidebar">
             <div class="py-4 px-3 mb-4 bg-light">
                 <div class="media d-flex align-items-center"><img
-                        src="https://suzmakelaars.nl/wp-content/uploads/2019/11/user-placeholder-4-e1574089236199.png" alt="..."
+                        src="https://scontent-frt3-1.xx.fbcdn.net/v/t1.0-9/54424687_1498788586918848_5011177178784595968_n.jpg?_nc_cat=102&_nc_ohc=ZkuHu6xLYW4AX_0o92d&_nc_ht=scontent-frt3-1.xx&oh=842ee679d4bf42e80ec5ac4fd347b728&oe=5ECE75CC" alt="..."
                         width="65" class="mr-3 rounded-circle img-thumbnail shadow-sm">
                     <div class="media-body">
                         <h4 class="m-0">{{this.$store.getters.user.name}}</h4>
@@ -44,14 +44,14 @@
                 eslint: "",
                 items: {
                     devices: [
-                        {title: 'EdgeDevices', icon: 'mdi-monitor', link: 'about', },
+                        {title: 'EdgeDevices', icon: 'mdi-monitor', link: 'edgedevices', },
                         {title: 'Sensorsdevices', icon: 'mdi-minus-network', link: 'about'},
                         {title: 'Sensors', icon: 'mdi-satellite-variant', link: 'about'},
                         {title: 'Sensordata', icon: 'mdi-floppy', link: 'about'},
                         {title: 'Logout', icon: 'mdi-account-key', link: 'about'}
                         ],
                     user: [
-                        {title: 'Dashboard', icon: 'mdi-view-dashboard', link: 'about'},
+                        {title: 'Dashboard', icon: 'mdi-view-dashboard', link: 'home'},
                         {title: 'Account', icon: 'mdi-account-box', link: 'about'}
                     ]
                 },
@@ -82,40 +82,4 @@
         transition: all 0.4s;
     }
 
-    .page-content {
-        width: calc(100% - 17rem);
-        margin-left: 17rem;
-        transition: all 0.4s;
-    }
-
-    /* for toggle behavior */
-
-    #sidebar.active {
-        margin-left: -17rem;
-    }
-
-    #content.active {
-        width: 100%;
-        margin: 0;
-    }
-
-    @media (max-width: 768px) {
-        #sidebar {
-            margin-left: -17rem;
-        }
-
-        #sidebar.active {
-            margin-left: 0;
-        }
-
-        #content {
-            width: 100%;
-            margin: 0;
-        }
-
-        #content.active {
-            margin-left: 17rem;
-            width: calc(100% - 17rem);
-        }
-    }
 </style>
