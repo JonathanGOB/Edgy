@@ -37,8 +37,11 @@ import {
     faSuitcase,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
+import VueGoogleCharts from 'vue-google-charts'
+
 
 Vue.config.productionTip = false
+Vue.use(VueGoogleCharts)
 
 library.add(faUserSecret, faAlignJustify, faSearch, faAngleLeft, faUser, faSpinner, faEye, faTrashAlt, faBars, faShoppingCart, faStar, faStarHalf, faChevronLeft, faHome, faHeart, faTrash, faChevronCircleRight, faChevronCircleLeft, faWallet, faSignOutAlt, faCog, faStore, faComments, faCoins, faFileInvoice, faSuitcase);
 Vue.component("font-awesome-icon", FontAwesomeIcon);

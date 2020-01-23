@@ -72,6 +72,11 @@
                 error: "",
             }
         },
+        created() {
+            if(this.$store.getters.user){
+                this.$router.push('/')
+            }
+        },
         name: "Register",
             methods:{
             register() {

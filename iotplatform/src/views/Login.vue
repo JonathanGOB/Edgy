@@ -70,6 +70,11 @@
                 error: "",
             }
         },
+        created() {
+            if(this.$store.getters.user){
+                this.$router.push('/')
+            }
+        },
         methods: {
             login() {
                 this.error = "";

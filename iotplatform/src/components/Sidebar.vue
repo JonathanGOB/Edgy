@@ -1,7 +1,7 @@
 <template>
     <div>
         <slide>
-            <span>user: {{this.$store.getters.user.name}}</span>
+            <p>user: {{this.$store.getters.user.name}}</p>
             <router-link tag="li" to="/login">dashboard</router-link>
             <router-link tag="li" to="/">edgedevices</router-link>
             <router-link tag="li" to="/">sensorsdevices</router-link>
