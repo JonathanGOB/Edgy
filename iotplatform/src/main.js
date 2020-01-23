@@ -39,7 +39,6 @@ import {
 import {FontAwesomeIcon} from "@fortawesome/vue-fontawesome";
 import VueGoogleCharts from 'vue-google-charts'
 
-
 Vue.config.productionTip = false
 Vue.use(VueGoogleCharts)
 
