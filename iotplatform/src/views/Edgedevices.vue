@@ -1,8 +1,9 @@
 <template>
     <div class="home">
-
-        <Sidebar>
-        </Sidebar>
+        <div>
+            <Sidebar>
+            </Sidebar>
+        </div>
         <div class="page-content p-5">
             <EdgeDevicesTable>
             </EdgeDevicesTable>
@@ -27,6 +28,5 @@
     .page-content {
         width: calc(100% - 11rem);
         margin-left: 14rem;
-        transition: all 0.4s;
     }
 </style>

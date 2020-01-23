@@ -2,7 +2,7 @@ import Model from "./Model";
 import axios from "axios";
 
 export default class SensorData extends Model{
-    static endpoint = "SensorData"
+    static standardroute = "SensorData"
     static relations = ["Sensors", "SensorsDevice"]
 
     static getsensorsensordata(id){

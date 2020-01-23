@@ -5,15 +5,23 @@
 </template>
 
 <script>
+    import EdgeDevice from "../models/EdgeDevice";
     export default {
         name: "EdgeDevicesTable",
+        mounted() {
+            const edgemodel = EdgeDevice;
+            edgemodel.fetchall().then(response => {
+                this.items = response.data.edgedevices
+            }).catch(error => {
+                this.items = []
+                // eslint-disable-next-line no-console
+                console.log(error)
+            })
+        },
         data() {
             return {
                 items: [
-                    { age: 40, first_name: 'Dickerson', last_name: 'Macdonald' },
-                    { age: 21, first_name: 'Larsen', last_name: 'Shaw' },
-                    { age: 89, first_name: 'Geneva', last_name: 'Wilson' },
-                    { age: 38, first_name: 'Jami', last_name: 'Carney' }
+
                 ]
             }
         }

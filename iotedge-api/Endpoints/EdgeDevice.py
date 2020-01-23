@@ -28,7 +28,7 @@ class EdgeDevices(Resource):
         rows = table_service.query_entities('edgedevices', filter=filter)
         for row in rows:
             row["Timestamp"] = row["Timestamp"].isoformat()
-        return {"message": "success", "data": {"edgedevices": list(rows), "uri": request.base_url}}, 200
+        return {"data": {"message": "success", "edgedevices": list(rows), "uri": request.base_url}}, 200
 
     # Make new EdgeDevice
     @jwt_required
@@ -70,11 +70,11 @@ class EdgeDevices(Resource):
             'edgedevices', filter=check)
 
         if len(list(check_edgedevice)) >= 1:
-            return {"message": "error duplicate name"}, 400
+            return {"data": {"message": "error duplicate name"}}, 400
 
         table_service.insert_entity('edgedevices', edgedevice_fields)
 
-        return {"message": "success", "data": {"edgedevice": edgedevice_fields}}, 200
+        return {"data": {"message": "success", "edgedevice": edgedevice_fields}}, 200
 
 
 class SingleEdgeDevice(Resource):
@@ -106,7 +106,7 @@ class SingleEdgeDevice(Resource):
             return {"message": "error device not found"}, 400
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "data": {"edgedevice": edgedevice, "uri": request.base_url}}, 200
+        return {"data": {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}}, 200
 
     # Update EdgeDevice by id
     @jwt_required
@@ -140,11 +140,11 @@ class SingleEdgeDevice(Resource):
             edgedevice["Description"] = args["Description"].replace("'", ";")
             del edgedevice["etag"]
         except:
-            return {"message": "fill all data"}, 400
+            return {"data": {"message": "fill all data"}}, 400
         table_service.update_entity('edgedevices', edgedevice)
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
-        return {"message": "success", "data": {"edgedevice": edgedevice, "uri": request.base_url}}, 200
+        return {"data": {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}}, 200
 
     # Delete EdgeDevice by id and all the children of the EdgeDevice
     @jwt_required
@@ -173,4 +173,4 @@ class SingleEdgeDevice(Resource):
         edgedevice = cascader.delete()
         if edgedevice == None:
             return {"message": "device not found"}, 400
-        return {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}, 200
+        return {"data": {"message": "success deleted edgedevice {}".format(edgedevice["Name"])}}, 200

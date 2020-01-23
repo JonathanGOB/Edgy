@@ -2,9 +2,6 @@ import axios from 'axios';
 
 export default class Model{
 
-    constructor(endpoint) {
-        this.standardroute = endpoint;
-    }
 
     static fetch(id){
         return new Promise((resolve, reject) => {

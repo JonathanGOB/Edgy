@@ -10,6 +10,8 @@ export default class User extends Model {
         "account": "Account"
     };
 
+    static standardroute = User.endpoints["account"]
+
     static login(params) {
         return new Promise((resolve, reject) => {
             axios.get(`/Api/V1/${this.endpoints["login"]}`,
@@ -68,9 +70,5 @@ export default class User extends Model {
                     reject(error);
                 })
         });
-    }
-
-    constructor() {
-        super(User.endpoints["account"]);
     }
 }
