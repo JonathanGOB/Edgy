@@ -22,11 +22,18 @@ const routes = [
     path: '/login',
     name: 'login',
     component: () => import(/* webpackChunkName: "login" */ '../views/Login.vue')
+  },
+
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import(/* webpackChunkName: "login" */ '../views/Register.vue')
   }
 ]
 
 const router = new VueRouter({
-  routes
+  routes,
+  mode: 'history'
 })
 
 export default router

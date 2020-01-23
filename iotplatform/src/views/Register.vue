@@ -5,8 +5,19 @@
                 <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
                     <div class="card mt-5 mb-3">
                         <div class="card-body">
-                            <h3 class="card-title text-center">Sign in</h3>
+                            <h3 class="card-title text-center">Register your own account</h3>
                             <form @submit.prevent>
+                                <div class="form-group">
+                                    <label class="mb-0" for="inputName">Name</label>
+                                    <input
+                                            type="name"
+                                            id="inputName"
+                                            class="form-control"
+                                            required
+                                            autofocus
+                                            v-model="name"
+                                    >
+                                </div>
                                 <div class="form-group">
                                     <label class="mb-0" for="inputEmail">Email</label>
                                     <input
@@ -32,7 +43,7 @@
                                 </div>
 
                                 <button class="btn btn-md btn-primary btn-block mb-3 btn-dark" @click="login">
-                                    Sign in
+                                    register you account
                                     <font-awesome-icon icon="spinner" v-if="loading" spin/>
                                 </button>
 
@@ -40,16 +51,6 @@
                                     <span style="color:red">{{ error }}</span>
                                 </div>
                                 <br>
-                                <div class="mt-4 mb-2 small d-flex">
-                                    <hr class="w-25 mt-2">
-                                    New to this platform?
-                                    <hr class="w-25 mt-2">
-                                </div>
-                                <router-link
-                                        :to="{name: 'register'}"
-                                        class="btn btn-md btn-block btn-light"
-                                >Create your own account
-                                </router-link>
                             </form>
                         </div>
                     </div>
@@ -64,13 +65,14 @@
         data() {
             return {
                 email: "",
+                name: "",
                 password: "",
                 loading: false,
                 error: "",
             }
         },
-        name: "Login",
-        methods:{
+        name: "Register",
+            methods:{
             login() {
 
             },

@@ -58,6 +58,7 @@ class UserLogin(Resource):
                     return {
                                "data": {
                                    'message': 'Logged in as {}'.format(user['Name']),
+                                   'user': {"name": user['Name'], "email": user['Email'], "id": user['RowKey']},
                                    'access_token': access_token,
                                    'refresh_token': refresh_token,
                                    "uri": request.base_url
@@ -183,9 +184,9 @@ class Account(Resource):
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
         return {"message": "success",
-                "data": {"user": {"Name": user["Name"], "Email": user["Email"], "UserId": user["RowKey"],
+                "data": {"user": {"name": user["Name"], "email": user["Email"], "id": user["RowKey"]},
                                   "Last_updated": timestamp,
-                                  "uri": request.base_url}}}, 200
+                                  "uri": request.base_url}}, 200
 
     @jwt_required
     def put(self):

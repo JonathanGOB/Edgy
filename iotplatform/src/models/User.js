@@ -6,7 +6,7 @@ export default class User extends Model {
         "login": "Login",
         "register": "Register",
         "refreshtoken": "RefreshToken",
-        "logout": ["Logout/Refresh", "Logout/Access"],
+        "logout": "Logout/Access",
         "account": "Account"
     };
 
@@ -59,9 +59,8 @@ export default class User extends Model {
     }
 
     static logout() {
-        let return_json = {}
-        let refresh = Promise((resolve, reject) => {
-            axios.post(`/Api/V1/${this.endpoints["logout"][0]}`)
+        return new Promise((resolve, reject) => {
+            axios.post(`/Api/V1/${this.endpoints["logout"]}`)
                 .then(response => {
                     const model = {"data": response.data};
                     resolve(model);
@@ -69,23 +68,6 @@ export default class User extends Model {
                 .catch(error => {
                     reject(error);
                 })
-        });
-
-        let access = Promise((resolve, reject) => {
-            axios.post(`/Api/V1/${this.endpoints["logout"][1]}`)
-                .then(response => {
-                    const model = {"data": response.data};
-                    resolve(model);
-                })
-                .catch(error => {
-                    reject(error);
-                })
-        });
-        return new Promise.all([refresh, access]).then(data => {
-            return_json["refresh"] = data
-        }).then(data => {
-            return_json["access"] = data
-            return return_json
         });
     }
 

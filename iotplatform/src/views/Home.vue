@@ -7,10 +7,14 @@
 <script>
 // @ is an alias to /src
 //import HelloWorld from '@/components/HelloWorld.vue'
-import store from '../store'
 
 export default {
   name: 'home',
+  created() {
+    if(!this.$store.getters.user){
+      this.$router.push('/login')
+    }
+  },
   components: {
 
   }
