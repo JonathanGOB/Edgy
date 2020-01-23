@@ -42,7 +42,7 @@
                                     >
                                 </div>
 
-                                <button class="btn btn-md btn-primary btn-block mb-3 btn-dark" @click="login">
+                                <button class="btn btn-md btn-primary btn-block mb-3 btn-dark" @click="register">
                                     register you account
                                     <font-awesome-icon icon="spinner" v-if="loading" spin/>
                                 </button>
@@ -61,6 +61,7 @@
 </template>
 
 <script>
+    import User from "../models/User"
     export default {
         data() {
             return {
@@ -73,7 +74,18 @@
         },
         name: "Register",
             methods:{
-            login() {
+            register() {
+                this.error = "";
+                this.loading = true;
+                User.register({
+                    Name: this.name,
+                    Password: this.password,
+                    Email: this.email
+                }).then(() => {
+                    this.$router.push('/login');
+                }).catch((error) => {
+                    this.error = error.response.data.message;
+                })
 
             },
         }

@@ -14,7 +14,8 @@ export default new Vuex.Store({
     state: {
         token: null,
         user: null,
-    },
+        url: axios.defaults.baseURL = 'http://localhost:5000'
+},
     getters: {
         user: (state) => state.user,
     },
@@ -34,21 +35,23 @@ export default new Vuex.Store({
       },
     },
     actions: {
-        auth({commit}, {email, password}) {
-            User().login(email, password).then(response => {
-                const token = response.access_token
+        auth({commit}, email, password) {
+            User.login(email, password).then(response => {
+                const token = response.data.data.access_token
                 commit('setToken', token)
 
-                const user = response.user
+                const user = response.data.data.user
                 commit('setUser', user)
                 return true
             }).catch(error => {
                 return error;
-            })
+            }).finally(() => {
+                this.loading = false;
+            });
         },
 
       logout({commit}) {
-        User().logout().then(() => {
+        User.logout().then(() => {
           const token = null
           commit('removeToken', token)
 

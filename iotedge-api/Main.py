@@ -3,13 +3,15 @@ from flask_restful import Api
 from flask import Flask, jsonify
 from Endpoints import User, EdgeDevice, SensorDevice, Sensor, SensorData
 from TableStorage.TableStorageConnection import AzureTableStorage
-
+from flask_cors import CORS
+import Settings.Salt  as salt
 app = Flask(__name__)
 api = Api(app)
+CORS(app)
 
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
-app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+app.config['JWT_SECRET_KEY'] = salt.secret
 app.config['PROPAGATE_EXCEPTIONS'] = True
 jwt = JWTManager(app)
 

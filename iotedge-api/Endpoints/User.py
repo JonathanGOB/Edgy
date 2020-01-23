@@ -66,9 +66,9 @@ class UserLogin(Resource):
                            }, 200
 
                 except:
-                    return {"message": "something went wrong"}, 500
+                    return {"data": {"message": "something went wrong"}}, 500
             else:
-                return {"message": "wrong password"}, 400
+                return {"data": {"message": "wrong password"}}, 400
 
 
 class UserRegistration(Resource):
@@ -110,7 +110,7 @@ class UserRegistration(Resource):
 
         table_service.insert_entity('users', user)
         user.Password = args["Password"]
-        return {"message": "success", "data": {"user": user, "uri": request.base_url}}, 200
+        return {"data": {"message": "success", "user": user, "uri": request.base_url}}, 200
 
 
 class UserLogoutAccess(Resource):
@@ -138,9 +138,9 @@ class UserLogoutAccess(Resource):
         try:
             revoked_token = {"PartitionKey": "AccessToken", "RowKey": str(revokedtokens_table["NewId"]), "Token": jti}
             table_service.insert_entity('revokedtokens', revoked_token)
-            return {'message': 'Access token has been revoked', "uri": request.base_url}, 200
+            return {"data": {'message': 'Access token has been revoked', "uri": request.base_url}}, 200
         except:
-            return {'message': 'Something went wrong'}, 500
+            return {"data": {'message': 'Something went wrong'}}, 500
 
 
 class UserLogoutRefresh(Resource):
@@ -168,9 +168,9 @@ class UserLogoutRefresh(Resource):
         try:
             revoked_token = {"PartitionKey": "RefreshToken", "RowKey": revokedtokens_table["NewId"], "Token": jti}
             table_service.insert_entity('revokedtokens', revoked_token)
-            return {'message': 'Access token has been revoked', "uri": request.base_url}, 200
+            return {"data": {'message': 'Access token has been revoked', "uri": request.base_url}}, 200
         except:
-            return {'message': 'Something went wrong'}, 500
+            return {"data": {'message': 'Something went wrong'}}, 500
 
 
 class Account(Resource):
@@ -183,8 +183,8 @@ class Account(Resource):
         user = table_service.query_entities('users', filter=filter)
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
-        return {"message": "success",
-                "data": {"user": {"name": user["Name"], "email": user["Email"], "id": user["RowKey"]},
+        return {"data": {"message": "success",
+                "user": {"name": user["Name"], "email": user["Email"], "id": user["RowKey"]},
                                   "Last_updated": timestamp,
                                   "uri": request.base_url}}, 200
 
@@ -212,7 +212,7 @@ class Account(Resource):
             except:
                 return {"message": "not everything filled"}, 400
 
-        return {"message": "wrong password", "uri": request.base_url}, 400
+        return {"data": {"message": "wrong password", "uri": request.base_url}}, 400
 
     def delete(self):
         storage = AzureTableStorage()
@@ -249,6 +249,6 @@ class Account(Resource):
                     return {"message": "something went wrong"}, 500
 
             table_service.delete_entity('users', user["PartitionKey"], user["RowKey"])
-            return {"message": "succes deleted user {}".format(user["Name"]), "uri": request.base_url}, 200
+            return {"data": {"message": "succes deleted user {}".format(user["Name"]), "uri": request.base_url}}, 200
 
-        return {"message": "wrong password"}, 400
+        return {"data": {"message": "wrong password"}}, 400

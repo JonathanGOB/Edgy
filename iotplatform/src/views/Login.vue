@@ -31,7 +31,7 @@
                                     >
                                 </div>
 
-                                <button class="btn btn-md btn-primary btn-block mb-3 btn-dark" @click="login">
+                                <button type="button" class="btn btn-md btn-primary btn-block mb-3 btn-dark" @click="login">
                                     Sign in
                                     <font-awesome-icon icon="spinner" v-if="loading" spin/>
                                 </button>
@@ -61,6 +61,7 @@
 
 <script>
     export default {
+        name: "Login",
         data() {
             return {
                 email: "",
@@ -69,10 +70,18 @@
                 error: "",
             }
         },
-        name: "Login",
-        methods:{
+        methods: {
             login() {
-
+                this.error = "";
+                this.loading = true;
+                this.$store.dispatch('auth', {
+                    Email: this.email,
+                    Password: this.password
+                }).then(() => {
+                    this.$router.push('/');
+                }).catch((error) => {
+                    this.error = error.response.data.message;
+                })
             },
         }
     }

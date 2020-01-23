@@ -12,7 +12,7 @@ export default class User extends Model {
 
     static login(params) {
         return new Promise((resolve, reject) => {
-            axios.post(`/Api/V1/${this.endpoints["login"]}`,
+            axios.get(`/Api/V1/${this.endpoints["login"]}`,
                 {
                     params: params,
                 })
@@ -26,19 +26,18 @@ export default class User extends Model {
         });
     }
 
-    static register(params) {
+    static register(params = {}) {
         return new Promise((resolve, reject) => {
-            axios.post(`/Api/V1/${this.endpoints["register"]}`,
-                {
-                    params: params,
-                })
+            axios.post(`/Api/V1/${this.endpoints["register"]}`, params)
                 .then(response => {
                     const model = {"data": response.data};
                     resolve(model);
                 })
                 .catch(error => {
                     reject(error);
-                })
+                }).finally(() => {
+                this.loading = false;
+            });
         });
     }
 
