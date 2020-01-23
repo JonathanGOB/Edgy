@@ -39,6 +39,11 @@
     export default {
         components: {},
         name: "Sidebar",
+        beforeCreate() {
+            if(!this.$store.getters.user){
+                this.$router.push('/login')
+            }
+        },
         data() {
             return {
                 eslint: "",
@@ -48,7 +53,7 @@
                         {title: 'Sensorsdevices', icon: 'mdi-minus-network', link: 'about'},
                         {title: 'Sensors', icon: 'mdi-satellite-variant', link: 'about'},
                         {title: 'Sensordata', icon: 'mdi-floppy', link: 'about'},
-                        {title: 'Logout', icon: 'mdi-account-key', link: 'about'}
+                        {title: 'Logout', icon: 'mdi-account-key', link: 'logout'}
                         ],
                     user: [
                         {title: 'Dashboard', icon: 'mdi-view-dashboard', link: 'home'},

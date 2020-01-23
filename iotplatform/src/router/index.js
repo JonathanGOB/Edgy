@@ -33,6 +33,11 @@ const routes = [
     path: '/edgedevices',
     name: 'edgedevices',
     component: () => import(/* webpackChunkName: "login" */ '../views/Edgedevices.vue')
+  },
+  {
+    path: '/logout',
+    name: 'logout',
+    component: () => import(/* webpackChunkName: "login" */ '../views/Logout.vue')
   }
 ]
 

@@ -60,6 +60,13 @@ export default new Vuex.Store({
           return true
         }).catch(error => {
           return error;
+        }).finally(() => {
+            const token = null
+            commit('removeToken', token)
+
+            const user = null
+            commit('setUser', user)
+            return true
         })
       },
 

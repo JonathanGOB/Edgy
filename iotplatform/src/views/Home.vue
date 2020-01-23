@@ -12,11 +12,6 @@ import Sidebar from "../components/Sidebar";
 
 export default {
   name: 'home',
-  created() {
-    if(!this.$store.getters.user){
-      this.$router.push('/login')
-    }
-  },
   components: {
     Sidebar
 
