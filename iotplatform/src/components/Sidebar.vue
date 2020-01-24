@@ -3,7 +3,7 @@
         <b-navbar-brand>Edgy</b-navbar-brand>
         <b-navbar-nav>
             <div v-for="item in items.devices" v-bind:key="item.title">
-                <b-nav-item :to="{ path: item.link }">{{item.title}}</b-nav-item>
+                <b-nav-item :to="{ path: item.link }"><v-icon>{{item.icon}}</v-icon>{{item.title}}</b-nav-item>
             </div>
         </b-navbar-nav>
         <div class="ml-auto">
@@ -39,13 +39,13 @@
                     devices: [
                         {title: 'Dashboard', icon: 'mdi-view-dashboard', link: '/'},
                         {title: 'EdgeDevices', icon: 'mdi-monitor', link: '/edgedevices',},
-                        {title: 'Sensorsdevices', icon: 'mdi-minus-network', link: '/about'},
-                        {title: 'Sensors', icon: 'mdi-satellite-variant', link: '/about'},
-                        {title: 'Sensordata', icon: 'mdi-floppy', link: '/about'},
+                        {title: 'Sensorsdevices', icon: 'mdi-minus-network', link: '/sensorsdevices'},
+                        {title: 'Sensors', icon: 'mdi-satellite-variant', link: '/sensors'},
+                        {title: 'Sensordata', icon: 'mdi-floppy', link: '/sensordata'},
 
                     ],
                     user: [
-                        {title: 'Account', icon: 'mdi-account-box', link: '/about'},
+                        {title: 'Account', icon: 'mdi-account-box', link: '/account'},
                         {title: 'Logout', icon: 'mdi-account-key', link: '/logout'}
                     ]
                 },

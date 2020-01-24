@@ -37,6 +37,26 @@ const routes = [
     path: '/logout',
     name: 'logout',
     component: () => import(/* webpackChunkName: "login" */ '../views/Logout.vue')
+  },
+  {
+    path: '/sensorsdevices',
+    name: 'sensorsdevices',
+    component: () => import(/* webpackChunkName: "login" */ '../views/SensorsDevices.vue')
+  },
+  {
+    path: '/sensors',
+    name: 'sensors',
+    component: () => import(/* webpackChunkName: "login" */ '../views/Sensors.vue')
+  },
+  {
+    path: '/sensordata',
+    name: 'sensordata',
+    component: () => import(/* webpackChunkName: "login" */ '../views/Sensordata.vue')
+  },
+  {
+    path: '/account',
+    name: 'account',
+    component: () => import(/* webpackChunkName: "login" */ '../views/Account.vue')
   }
 ]
 
