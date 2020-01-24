@@ -1,4 +1,5 @@
 <template>
+    <div v-if="this.$store.getters.user">
     <b-navbar type="dark" variant="dark">
         <b-navbar-brand>Edgy</b-navbar-brand>
         <b-navbar-nav>
@@ -9,6 +10,7 @@
         <div class="ml-auto">
         <b-img v-bind="mainProps" src="https://scontent-frt3-1.xx.fbcdn.net/v/t1.0-9/54424687_1498788586918848_5011177178784595968_n.jpg?_nc_cat=102&_nc_ohc=ZkuHu6xLYW4AX_0o92d&_nc_ht=scontent-frt3-1.xx&oh=842ee679d4bf42e80ec5ac4fd347b728&oe=5ECE75CC" rounded alt="Rounded image" right></b-img>
         <b-navbar-nav>
+
         <b-nav-item-dropdown v-bind:text=this.$store.getters.user.name>
                 <div v-for="item in items.user" v-bind:key="item.title">
                     <b-dropdown-item :to="{ path: item.link }">{{item.title}}</b-dropdown-item>
@@ -17,6 +19,7 @@
         </b-navbar-nav>
         </div>
     </b-navbar>
+    </div>
 </template>
 
 <script>
