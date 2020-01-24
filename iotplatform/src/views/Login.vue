@@ -103,7 +103,7 @@
                         }
                     );
                 }).catch((error) => {
-                    this.error = error.response.data.message;
+                    this.error = error.response.data.data.message;
                 })
             },
         }

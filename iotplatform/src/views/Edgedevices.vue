@@ -1,13 +1,11 @@
 <template>
-    <div class="home">
-        <div>
-            <Sidebar>
-            </Sidebar>
-        </div>
-        <div class="page-content p-5">
-            <EdgeDevicesTable>
-            </EdgeDevicesTable>
-        </div>
+    <div>
+        <Sidebar>
+        </Sidebar>
+        <b-container fluid>
+                <EdgeDevicesTable>
+                </EdgeDevicesTable>
+        </b-container>
     </div>
 </template>
 
@@ -25,8 +23,5 @@
 </script>
 
 <style scoped>
-    .page-content {
-        width: calc(100% - 11rem);
-        margin-left: 14rem;
-    }
+
 </style>

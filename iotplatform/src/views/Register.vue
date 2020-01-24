@@ -89,7 +89,7 @@
                 }).then(() => {
                     this.$router.push('/login');
                 }).catch((error) => {
-                    this.error = error.response.data.message;
+                    this.error = error.response.data.data.message;
                 })
 
             },

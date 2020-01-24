@@ -42,6 +42,19 @@ export default class Model{
         });
     }
 
+    static create(params = {}) {
+        return new Promise((resolve, reject) => {
+            axios.post(`/Api/V1/${this.standardroute}`, params)
+                .then(response => {
+                    const model = {"data": response.data};
+                    resolve(model);
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        });
+    }
+
     static update(id, params = {}){
         return new Promise((resolve, reject) => {
             axios.put(`/Api/V1/${this.standardroute}/${id}`,
