@@ -1,7 +1,7 @@
 <template>
     <div v-if="this.$store.getters.user">
     <b-navbar type="dark" variant="dark">
-        <b-navbar-brand>Edgy</b-navbar-brand>
+        <b-navbar-brand>edgy-platform</b-navbar-brand>
         <b-navbar-nav>
             <div v-for="item in items.devices" v-bind:key="item.title">
                 <b-nav-item :to="{ path: item.link }"><v-icon>{{item.icon}}</v-icon>{{item.title}}</b-nav-item>

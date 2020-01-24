@@ -87,7 +87,7 @@
             </template>
 
             <template v-slot:cell(edit)="row">
-                <b-button variant="success" size="sm" v-b-modal.modal-1 @click="edit(row.item.RowKey)">Edit</b-button>
+                <b-button variant="success" size="sm" @click="edit(row.item.RowKey, row.item.location, row.item.Description, row.item.Name); modalShow = !modalShow">Edit</b-button>
             </template>
 
             <template v-slot:row-details="row">
@@ -125,7 +125,7 @@
                 </b-pagination>
             </b-col>
         </b-row>
-        <b-modal id="modal-1" title="edit edgedevice" hide-footer>
+        <b-modal v-model="modalShow" title="edit edgedevice" hide-footer>
             <b-form>
                 <b-form-group
                         id="input-group-1"
@@ -199,6 +199,7 @@
         },
         data() {
             return {
+                modalShow: false,
                 error_modal: "",
                 selected_id: "",
                 filter: "",
@@ -312,10 +313,10 @@
                 })
             },
 
-            edit(id) {
-                this.location = ''
-                this.name = ''
-                this.description = null
+            edit(id, location, description, name) {
+                this.form.location = location
+                this.form.name = description
+                this.form.description = name
                 this.selected_id = id
             },
 

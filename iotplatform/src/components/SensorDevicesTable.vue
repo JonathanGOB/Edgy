@@ -73,7 +73,7 @@
 
     export default {
         name: "SensorDevicesTable",
-        mounted() {
+        created() {
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
             EdgeDevice.fetchall().then(response =>{
                 this.edgedevices = response.data.data.edgedevices.sort(function (a, b) {
