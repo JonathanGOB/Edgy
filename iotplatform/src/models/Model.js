@@ -58,9 +58,7 @@ export default class Model{
     static update(id, params = {}){
         return new Promise((resolve, reject) => {
             axios.put(`/Api/V1/${this.standardroute}/${id}`,
-                {
-                    params: params,
-                })
+                params)
                 .then(response => {
                     const model = {"data": response.data};
                     resolve(model);

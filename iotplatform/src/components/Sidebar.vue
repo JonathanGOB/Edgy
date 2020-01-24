@@ -1,5 +1,5 @@
 <template>
-    <b-navbar type="light" variant="light">
+    <b-navbar type="dark" variant="dark">
         <b-navbar-brand>Edgy</b-navbar-brand>
         <b-navbar-nav>
             <div v-for="item in items.devices" v-bind:key="item.title">

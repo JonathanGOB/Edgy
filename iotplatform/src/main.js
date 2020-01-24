@@ -50,7 +50,7 @@ Vue.use(BootstrapVue)
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
 
-Vue.use(VeeValidate);
+Vue.use(VeeValidate, { fieldsBagName: 'veeFields' });
 
 new Vue({
     router,

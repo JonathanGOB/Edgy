@@ -1,7 +1,7 @@
 from azure.cosmosdb.table import Entity
 from flask_restful import Resource, reqparse
 from flask import jsonify, request
-
+import copy
 from Helpers.Cascade import Cascade
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
@@ -134,6 +134,7 @@ class SingleEdgeDevice(Resource):
         else:
             return {"message": "error device not found"}
 
+        copy_edgedevice = copy.deepcopy(edgedevice)
         try:
             edgedevice["Name"] = args["Name"].replace("'", ";")
             edgedevice["PartitionKey"] = args["Location"].replace("'", ";")
@@ -141,7 +142,8 @@ class SingleEdgeDevice(Resource):
             del edgedevice["etag"]
         except:
             return {"data": {"message": "fill all data"}}, 400
-        table_service.update_entity('edgedevices', edgedevice)
+        table_service.delete_entity('edgedevices', copy_edgedevice["PartitionKey"], copy_edgedevice["RowKey"])
+        table_service.insert_entity('edgedevices', edgedevice)
 
         edgedevice["Timestamp"] = edgedevice["Timestamp"].isoformat()
         return {"data": {"message": "success", "edgedevice": edgedevice, "uri": request.base_url}}, 200
