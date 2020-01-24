@@ -9,7 +9,7 @@
         name: "Logout",
         mounted() {
             this.$store.dispatch('logout').then(() => {
-                this.$router.go('/')
+                this.$router.push('/')
             })
         }
     }

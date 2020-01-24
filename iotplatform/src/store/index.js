@@ -15,7 +15,7 @@ export default new Vuex.Store({
         token: null,
         user: null,
         url: axios.defaults.baseURL = 'http://localhost:5000'
-},
+    },
     getters: {
         user: (state) => state.user,
     },
@@ -30,10 +30,10 @@ export default new Vuex.Store({
             state.user = user;
         },
 
-      removeToken: (state, token) => {
-        state.token = token;
-        delete axios.defaults.headers.common["Authorization"];
-      },
+        removeToken: (state, token) => {
+            state.token = token;
+            delete axios.defaults.headers.common["Authorization"];
+        },
     },
     actions: {
         auth({commit}, email, password) {
@@ -50,23 +50,13 @@ export default new Vuex.Store({
             });
         },
 
-      logout({commit}) {
-        User.logout().then(() => {
-          const token = null
-          commit('removeToken', token)
+        logout({commit}) {
+            const token = null;
+            commit('removeToken', token);
 
-          const user = null
-          commit('setUser', user)
-        }).catch(error => {
-          return error;
-        }).finally(() => {
-            const token = null
-            commit('removeToken', token)
-
-            const user = null
+            const user = null;
             commit('setUser', user)
-        })
-      },
+        },
 
     },
     modules: {},
