@@ -75,6 +75,12 @@
                 this.$router.push('/')
             }
         },
+
+        computed: {
+            user () {
+                return this.$store.getters.user
+            }
+        },
         methods: {
             login() {
                 this.error = "";
@@ -83,7 +89,19 @@
                     Email: this.email,
                     Password: this.password
                 }).then(() => {
-                    this.$router.push('/');
+                    this.$store.watch(
+                        (state)=>{
+                            return state.user // could also put a Getter here
+                        },
+                        // eslint-disable-next-line no-unused-vars
+                        (newValue, oldValue)=>{
+                            this.$router.push('/')
+                        },
+                        //Optional Deep if you need it
+                        {
+                            deep:true
+                        }
+                    );
                 }).catch((error) => {
                     this.error = error.response.data.message;
                 })

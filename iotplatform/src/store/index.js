@@ -19,6 +19,7 @@ export default new Vuex.Store({
     getters: {
         user: (state) => state.user,
     },
+
     mutations: {
         setToken: (state, token) => {
             state.token = token;
@@ -42,7 +43,6 @@ export default new Vuex.Store({
 
                 const user = response.data.data.user
                 commit('setUser', user)
-                return true
             }).catch(error => {
                 return error;
             }).finally(() => {
@@ -57,7 +57,6 @@ export default new Vuex.Store({
 
           const user = null
           commit('setUser', user)
-          return true
         }).catch(error => {
           return error;
         }).finally(() => {
@@ -66,7 +65,6 @@ export default new Vuex.Store({
 
             const user = null
             commit('setUser', user)
-            return true
         })
       },
 
