@@ -110,6 +110,16 @@
                         <b-col sm="3" class="text-sm-right"><b>Timestamp:</b></b-col>
                         <b-col>{{ row.item.Timestamp }}</b-col>
                     </b-row>
+
+                    <b-row class="mb-2">
+                        <b-col sm="3" class="text-sm-right"><b>Protocol:</b></b-col>
+                        <b-col>{{ row.item.Protocol }}</b-col>
+                    </b-row>
+
+                    <b-row class="mb-2">
+                        <b-col sm="3" class="text-sm-right"><b>Edgedevice:</b></b-col>
+                        <b-col>{{ create_device.selectorid[row.item.EdgeDeviceId]}}</b-col>
+                    </b-row>
                 </b-card>
             </template>
         </b-table>
@@ -209,9 +219,11 @@
 
                 this.create_device.options = []
                 this.create_device.selector = {}
+                this.create_device.selectorid = {}
                 this.edgedevices.forEach(device => {
                     this.create_device.options.push(device.Name)
                     this.create_device.selector[device.Name] = device
+                    this.create_device.selectorid[device.RowKey] = device.Name
                 })
             })
 
@@ -255,6 +267,7 @@
                 create_device: {
                     options: [],
                     selector: {},
+                    selectorid: {},
                     selected: "",
                     loading: false,
                     protocol: "",
@@ -267,15 +280,12 @@
         methods:{
             createSensorDevice() {
                 this.error = "";
-                this.loading = true;
                 if (!this.create_device.protocol || !this.create_device.selected || !this.create_device.location || !this.create_device.name || !this.create_device.description){
                     this.error = "fill everything"
                 }
                 if (this.create_device.protocol && this.create_device.selected && this.create_device.location && this.create_device.name && this.create_device.description ) {
-                    this.loading = true;
+                    this.create_device.loading = true;
                     axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
-                    // eslint-disable-next-line no-console
-                    console.log(this.create_device.selector[this.create_device.selected])
                     SensorsDevice.create({
                         Protocol: this.create_device.protocol,
                         Name: this.create_device.name,
@@ -283,9 +293,27 @@
                         Location: this.create_device.location,
                         EdgeDeviceId: this.create_device.selector[this.create_device.selected].RowKey
                     }).then(() => {
+                        SensorsDevice.fetchall().then(response => {
+                            this.items = response.data.data.sensorsdevices.sort(function (a, b) {
+                                return a.RowKey - b.RowKey;
+                            });
 
+                            let id = 0;
+                            this.items.forEach(data => {
+                                data.id = id
+                                data.location = data.PartitionKey
+                                id++
+                                delete data.PartitionKey
+                            })
+
+                        }).catch(error => {
+                            this.items = []
+                            this.error = error
+                        })
+                        this.$refs.table.refresh();
+                        this.create_device.loading = false;
                     }).catch((error) => {
-                        this.loading = false;
+                        this.create_device.loading = false;
                         this.error = error.response.data.data.message;
                     })
                 }
