@@ -9,6 +9,7 @@ from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_r
                                 get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
 import json
 import hashlib
+import copy
 
 # Get data from url
 parser = reqparse.RequestParser()
@@ -48,13 +49,12 @@ class Sensors(Resource):
                 sensors_table = table_service.query_entities('rulers', filter=filter)
                 sensors_table = list(sensors_table)[0]
                 ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'],
-                                       "RowKey": sensors_table['RowKey'],
-                                       "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
+                                 "RowKey": sensors_table['RowKey'],
+                                 "NewId": sensors_table["NewId"] + 1, "Size": sensors_table["Size"] + 1}
                 table_service.update_entity('rulers', ruler_sensors, if_match=sensors_table["etag"])
                 isNew = True
             except:
                 print("concurrency problems")
-
 
         try:
             sensors_fields = {
@@ -70,7 +70,6 @@ class Sensors(Resource):
             }
         except:
             return {"message": "fill all data"}, 400
-
 
         check = "Name eq '{}' and SensorsDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
                                                                   args["SensorsDeviceId"].replace("'", ";"))
@@ -143,17 +142,21 @@ class SingleSensor(Resource):
         else:
             return {"message": "error device not found"}
 
+        copy_sensor = copy.deepcopy(sensor)
         try:
             sensor["SensorsDeviceId"] = args["SensorsDeviceId"].replace("'", ";")
             sensor["Name"] = args["Name"].replace("'", ";")
             sensor["PartitionKey"] = args["Location"].replace("'", ";")
             sensor["Datatype"] = args["Datatype"].replace("'", ";")
             sensor["Description"] = args["Description"].replace("'", ";")
+            sensor["ConnectionString"] = hashlib.sha256((args["Location"].replace("'", ";").encode('utf-8') + str(
+                sensor["RowKey"]).encode('utf-8'))).hexdigest()
             del sensor["etag"]
         except:
             return {"message": "fill all data"}, 400
 
-        table_service.update_entity('sensors', sensor)
+        table_service.delete_entity('sensors', copy_sensor["PartitionKey"], copy_sensor["RowKey"])
+        table_service.insert_entity('sensors', sensor)
 
         sensor["Timestamp"] = sensor["Timestamp"].isoformat()
         return {"message": "success", "data": {"sensor": sensor, "uri": request.base_url}}, 200
@@ -172,8 +175,8 @@ class SingleSensor(Resource):
                 sensors_table = table_service.query_entities('rulers', filter=filter)
                 sensors_table = list(sensors_table)[0]
                 ruler_sensors = {"PartitionKey": sensors_table['PartitionKey'],
-                                       "RowKey": sensors_table['RowKey'],
-                                       "NewId": sensors_table["NewId"], "Size": sensors_table["Size"] - 1}
+                                 "RowKey": sensors_table['RowKey'],
+                                 "NewId": sensors_table["NewId"], "Size": sensors_table["Size"] - 1}
                 table_service.update_entity('rulers', ruler_sensors, if_match=sensors_table["etag"])
                 isNew = True
             except:

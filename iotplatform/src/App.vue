@@ -18,7 +18,7 @@
             // eslint-disable-next-line no-unused-vars
             $route(to, from) {
                 if (!this.logged) {
-                    if (this.$router.currentRoute.name != "login") {
+                    if (this.$router.currentRoute.name != "login" && this.$router.currentRoute.name != "register") {
                         this.$router.push('/login')
                     }
                 }

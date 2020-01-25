@@ -46,7 +46,7 @@
                                     <hr class="w-25 mt-2">
                                 </div>
                                 <router-link
-                                        :to="{name: 'register'}"
+                                        :to="{path : '/register'}"
                                         class="btn btn-md btn-block btn-light"
                                 >Create your own account
                                 </router-link>
