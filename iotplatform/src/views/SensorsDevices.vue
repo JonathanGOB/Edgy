@@ -19,7 +19,8 @@
         components:{
             SensorDevicesTable,
             Sidebar
-        }
+        },
+
     }
 </script>
 

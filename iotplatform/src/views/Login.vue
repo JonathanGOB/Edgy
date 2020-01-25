@@ -90,12 +90,15 @@
                     Password: this.password
                 }).then(() => {
                     this.$store.watch(
-                        (state)=>{
-                            return state.user // could also put a Getter here
+                        (getters)=>{
+                            return getters.user // could also put a Getter here
                         },
                         // eslint-disable-next-line no-unused-vars
                         (newValue, oldValue)=>{
-                            this.$router.push('/')
+                            this.$router.push('/').catch(err => {
+                                // eslint-disable-next-line no-console
+                                console.log(newValue, oldValue, err)
+                            })
                         },
                         //Optional Deep if you need it
                         {
@@ -103,7 +106,8 @@
                         }
                     );
                 }).catch((error) => {
-                    this.error = error.response.data.data.message;
+                    this.error = error.response.data.message;
+                    this.loading = false;
                 })
             },
         }

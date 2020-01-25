@@ -18,6 +18,7 @@ export default new Vuex.Store({
     },
     getters: {
         user: (state) => state.user,
+        token:(state) => state.token,
     },
 
     mutations: {
@@ -37,25 +38,35 @@ export default new Vuex.Store({
     },
     actions: {
         auth({commit}, email, password) {
-            User.login(email, password).then(response => {
-                const token = response.data.data.access_token
-                commit('setToken', token)
+            return new Promise((resolve, reject) => {
+                User.login(email, password).then(response => {
+                    const token = response.data.data.access_token
+                    commit('setToken', token)
 
-                const user = response.data.data.user
-                commit('setUser', user)
-            }).catch(error => {
-                return error;
-            }).finally(() => {
-                this.loading = false;
-            });
+                    const user = response.data.data.user
+                    commit('setUser', user)
+                    return true
+                }).catch(error => {
+                    reject(error)
+                }).finally(() => {
+                    this.loading = false;
+                });
+            })
         },
 
-        logout({commit}) {
-            const token = null;
-            commit('removeToken', token);
+        logout({commit, getters}) {
+            axios.defaults.headers.common['Authorization'] = 'Bearer ' + getters.token;
+            User.logout().then(() => {
+                const token = null;
+                commit('removeToken', token);
 
-            const user = null;
-            commit('setUser', user)
+                const user = null;
+                commit('setUser', user)
+            }).then(()=>{
+                this.$router.push('/login')
+            }).catch(error => {
+                return error;
+            })
         },
 
     },

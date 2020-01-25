@@ -10,7 +10,8 @@
     import Sidebar from "../components/Sidebar";
     export default {
         name: "Sensors",
-        components: {Sidebar}
+        components: {Sidebar},
+
     }
 </script>
 

@@ -18,7 +18,8 @@
         components: {
             Sidebar,
             EdgeDevicesTable
-        }
+        },
+
     }
 </script>
 

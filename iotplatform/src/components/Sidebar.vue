@@ -26,16 +26,6 @@
     export default {
         components: {},
         name: "Sidebar",
-        mounted() {
-            if (!this.logged) {
-                this.$router.push('/login')
-            }
-        },
-        computed: {
-            logged() {
-                return this.$store.getters.user
-            }
-        },
         data() {
             return {
                 items: {

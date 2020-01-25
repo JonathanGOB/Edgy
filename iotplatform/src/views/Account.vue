@@ -10,7 +10,8 @@
     import Sidebar from "../components/Sidebar";
     export default {
         name: "Account",
-        components: {Sidebar}
+        components: {Sidebar},
+
     }
 </script>
 
