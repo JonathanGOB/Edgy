@@ -52,7 +52,7 @@
                 </b-col>
                 <b-col>
                     <b-button class="mt-4" block @click="createSensorDevice">
-                        Create Edge device
+                        Create Sensors Device
                         <font-awesome-icon icon="spinner" v-if="create_device.loading" spin/>
                     </b-button>
                 </b-col>
