@@ -105,6 +105,13 @@
                 </b-button>
             </template>
 
+            <template v-slot:cell(data)="row">
+                <b-button variant="primary" size="sm"
+                          @click="stats(row.item.id); modalShow = !modalShow">
+                    Stats
+                </b-button>
+            </template>
+
             <template v-slot:row-details="row">
                 <b-card>
                     <b-row class="mb-2">
@@ -264,7 +271,7 @@
                     protocol: '',
                     id: '',
                 },
-                headers: ['id', 'location', 'Name', 'show_details', 'edit', 'delete'],
+                headers: ['id', 'location', 'Name', 'show_details', 'edit', 'delete', 'data'],
                 items: [],
                 edgedevices: [],
                 refresh_: {
@@ -370,6 +377,10 @@
                 // Trigger pagination to update the number of buttons/pages due to filtering
                 this.totalRows = filteredItems.length
                 this.currentPage = 1
+            },
+
+            stats(id){
+                this.$router.push('/sensordata/sensorsdevice/' + id)
             },
 
             remove(id) {

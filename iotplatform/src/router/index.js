@@ -57,7 +57,13 @@ const routes = [
     path: '/account',
     name: 'account',
     component: () => import(/* webpackChunkName: "login" */ '../views/Account.vue')
+  },
+  {
+    path: '/sensordata/:level/:id',
+    name: 'specificsensordata',
+    component: () => import(/* webpackChunkName: "login" */ '../views/SpecifickSensordata.vue')
   }
+
 ]
 
 const router = new VueRouter({

@@ -108,6 +108,13 @@
                 </b-button>
             </template>
 
+            <template v-slot:cell(data)="row">
+                <b-button variant="primary" size="sm"
+                          @click="stats(row.item.id); modalShow = !modalShow">
+                    Stats
+                </b-button>
+            </template>
+
             <template v-slot:row-details="row">
                 <b-card>
                     <b-row class="mb-2">
@@ -293,7 +300,7 @@
                 filter: "",
                 perPage: 10,
                 currentPage: 1,
-                headers: ['id', 'location', 'Name', 'show_details', 'edit', 'delete'],
+                headers: ['id', 'location', 'Name', 'show_details', 'edit', 'delete', 'data'],
                 items: [],
             }
         },
@@ -416,6 +423,10 @@
                     this.refresh_.loading = false;
                 })
                 this.$refs.table.refresh();
+            },
+
+            stats(id){
+                this.$router.push('/sensordata/sensor/' + id)
             },
 
             remove(id) {
