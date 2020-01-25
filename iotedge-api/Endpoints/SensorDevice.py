@@ -1,7 +1,7 @@
 from azure.cosmosdb.table import Entity
 from flask_restful import Resource, reqparse
 from flask import jsonify, request
-
+import copy
 from Helpers.Cascade import Cascade
 from Settings import Salt
 from TableStorage.TableStorageConnection import AzureTableStorage
@@ -139,6 +139,7 @@ class SingleSensorsDevice(Resource):
         else:
             return {"message": "error device not found"}
 
+        copy_sensordevice = copy.deepcopy(sensorsdevice)
         try:
             sensorsdevice["EdgeDeviceId"] = args["EdgeDeviceId"].replace("'", ";")
             sensorsdevice["Name"] = args["Name"].replace("'", ";")
@@ -148,7 +149,8 @@ class SingleSensorsDevice(Resource):
             del sensorsdevice["etag"]
         except:
             return {"message": "fill all data"}, 400
-        table_service.update_entity('sensorsdevices', sensorsdevice)
+        table_service.delete_entity('sensorsdevices', copy_sensordevice["PartitionKey"], copy_sensordevice["RowKey"])
+        table_service.insert_entity('sensorsdevices', sensorsdevice)
 
         sensorsdevice["Timestamp"] = sensorsdevice["Timestamp"].isoformat()
         return {"message": "success", "data": {"sensorsdevice": sensorsdevice, "uri": request.base_url}}, 200

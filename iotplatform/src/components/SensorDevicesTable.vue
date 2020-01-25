@@ -65,7 +65,10 @@
         </b-row>
         <b-row class="mt-2">
             <b-col>
-                <b-button class="mt-sm-4" @click="refresh">refresh</b-button>
+                <b-button class="mt-sm-4" @click="refresh">
+                    <font-awesome-icon icon="spinner" v-if="refresh_.loading" spin/>
+                    refresh
+                </b-button>
             </b-col>
             <b-col>
                 <b-input-group size="sm" class="mt-sm-4">
@@ -96,7 +99,10 @@
             </template>
 
             <template v-slot:cell(edit)="row">
-                <b-button variant="success" size="sm" @click="edit(row.item.RowKey, row.item.location, row.item.Description, row.item.Name); modalShow = !modalShow">Edit</b-button>
+                <b-button variant="success" size="sm"
+                          @click="edit(row.item.RowKey, row.item.location, row.item.Description, row.item.Name, row.item.Protocol, row.item.EdgeDeviceId); modalShow = !modalShow">
+                    Edit
+                </b-button>
             </template>
 
             <template v-slot:row-details="row">
@@ -178,18 +184,14 @@
                     ></b-form-input>
                 </b-form-group>
 
-                <b-form-group id="input-group-4" label="Edge device:" label-for="input-3">
-                    <b-form-input
-                            id="input-3"
-                            v-model="form.edgedevice"
-                            required
-                            placeholder="Enter edge device"
-                    ></b-form-input>
+                <b-form-group id="input-group-4" label="Edge device:" label-for="input-4">
+                    <b-form-select required id="input-4" v-model="form.edgedevice"
+                                   :options="create_device.options"></b-form-select>
                 </b-form-group>
 
-                <b-form-group id="input-group-5" label="Protocol:" label-for="input-3">
+                <b-form-group id="input-group-5" label="Protocol:" label-for="input-5">
                     <b-form-input
-                            id="input-3"
+                            id="input-5"
                             v-model="form.protocol"
                             required
                             placeholder="Enter protocol"
@@ -212,7 +214,7 @@
         name: "SensorDevicesTable",
         beforeCreate() {
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
-            EdgeDevice.fetchall().then(response =>{
+            EdgeDevice.fetchall().then(response => {
                 this.edgedevices = response.data.data.edgedevices.sort(function (a, b) {
                     return a.RowKey - b.RowKey;
                 });
@@ -245,12 +247,12 @@
                 this.error = error
             })
         },
-        data(){
-            return{
+        data() {
+            return {
                 modalShow: false,
                 error_modal: "",
                 loading: false,
-                error:"",
+                error: "",
                 filter: "",
                 perPage: 10,
                 currentPage: 1,
@@ -259,11 +261,15 @@
                     name: '',
                     description: '',
                     edgedevice: '',
-                    protocol: ''
+                    protocol: '',
+                    id: '',
                 },
                 headers: ['id', 'location', 'Name', 'show_details', 'edit', 'delete'],
                 items: [],
                 edgedevices: [],
+                refresh_: {
+                    loading: false,
+                },
                 create_device: {
                     options: [],
                     selector: {},
@@ -277,13 +283,13 @@
                 }
             }
         },
-        methods:{
+        methods: {
             createSensorDevice() {
                 this.error = "";
-                if (!this.create_device.protocol || !this.create_device.selected || !this.create_device.location || !this.create_device.name || !this.create_device.description){
+                if (!this.create_device.protocol || !this.create_device.selected || !this.create_device.location || !this.create_device.name || !this.create_device.description) {
                     this.error = "fill everything"
                 }
-                if (this.create_device.protocol && this.create_device.selected && this.create_device.location && this.create_device.name && this.create_device.description ) {
+                if (this.create_device.protocol && this.create_device.selected && this.create_device.location && this.create_device.name && this.create_device.description) {
                     this.create_device.loading = true;
                     axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
                     SensorsDevice.create({
@@ -319,12 +325,45 @@
                 }
             },
 
-            onSubmit(){
+            onSubmit() {
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
+                SensorsDevice.update(this.form.id, {
+                    Protocol: this.form.protocol,
+                    Name: this.form.name,
+                    Description: this.form.description,
+                    Location: this.form.location,
+                    EdgeDeviceId: this.create_device.selector[this.form.edgedevice].RowKey
+                }).then(() => {
+                    SensorsDevice.fetchall().then(response => {
+                        this.items = response.data.data.sensorsdevices.sort(function (a, b) {
+                            return a.RowKey - b.RowKey;
+                        });
 
+                        let id = 0;
+                        this.items.forEach(data => {
+                            data.id = id
+                            data.location = data.PartitionKey
+                            id++
+                            delete data.PartitionKey
+                        })
+                    }).catch(error => {
+                        this.items = []
+                        this.error = error
+                    })
+                }).catch((error) => {
+                    this.error_modal = error.response.data.data.message;
+                }).finally(() => {
+                    this.modalShow = false;
+                })
             },
 
-            edit(){
-
+            edit(id, location, description, name, protocol, edgedeviceid) {
+                this.form.id = id
+                this.form.location = location
+                this.form.description = description
+                this.form.name = name
+                this.form.protocol = protocol
+                this.form.edgedevice = this.create_device.selectorid[edgedeviceid]
             },
 
             onFiltered(filteredItems) {
@@ -333,8 +372,54 @@
                 this.currentPage = 1
             },
 
-            refresh(){
+            remove(id) {
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
+                SensorsDevice.delete(id).then(() => {
+                    SensorsDevice.fetchall().then(response => {
+                        this.items = response.data.data.sensorsdevices.sort(function (a, b) {
+                            return a.RowKey - b.RowKey;
+                        });
 
+                        let id = 0;
+                        this.items.forEach(data => {
+                            data.id = id
+                            data.location = data.PartitionKey
+                            id++
+                            delete data.PartitionKey
+                        })
+                    }).catch(error => {
+                        this.items = []
+                        this.error = error
+                    })
+                    this.$refs.table.refresh();
+                }).catch((error) => {
+                    this.error = error.response.data.data.message;
+                })
+            },
+
+            refresh() {
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
+                this.refresh_.loading = true;
+                SensorsDevice.fetchall().then(response => {
+                    this.items = response.data.data.sensorsdevices.sort(function (a, b) {
+                        return a.RowKey - b.RowKey;
+                    });
+                    let id = 0;
+                    this.items.forEach(data => {
+                        data.id = id
+                        data.location = data.PartitionKey
+                        id++
+                        delete data.PartitionKey
+                    })
+                    this.refresh_.loading = false;
+                    this.$refs.table.refresh();
+
+                }).catch(error => {
+                    this.items = []
+                    this.error = error
+                    this.refresh_.loading = false;
+                })
+                this.$refs.table.refresh();
             },
         },
         computed: {

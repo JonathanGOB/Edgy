@@ -56,7 +56,10 @@
         </div>
         <b-row class="mt-2">
             <b-col>
-                <b-button class="mt-sm-4" @click="refresh">refresh</b-button>
+                <b-button class="mt-sm-4" @click="refresh">
+                <font-awesome-icon icon="spinner" v-if="refresh_.loading" spin/>
+                refresh
+            </b-button>
             </b-col>
             <b-col>
                 <b-input-group size="sm" class="mt-sm-4">
@@ -199,6 +202,9 @@
         },
         data() {
             return {
+                refresh_: {
+                    loading: false,
+                },
                 modalShow: false,
                 error_modal: "",
                 selected_id: "",
@@ -248,6 +254,8 @@
                     })
                 }).catch((error) => {
                     this.error_modal = error.response.data.data.message;
+                }).finally(() => {
+                    this.modalShow = false;
                 })
             },
             createEdgeDevice() {
@@ -331,6 +339,7 @@
             refresh(){
                 const edgemodel = EdgeDevice;
                 axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.$store.state.token;
+                this.refresh_.loading = true;
                 edgemodel.fetchall().then(response => {
                     this.items = response.data.data.edgedevices.sort(function (a, b) {
                         return a.RowKey - b.RowKey;
@@ -342,11 +351,14 @@
                         id++
                         delete data.PartitionKey
                     })
+                    this.refresh_.loading = false;
+                    this.$refs.table.refresh();
                 }).catch(error => {
                     this.items = []
                     this.error = error
+                    this.refresh_.loading = false;
+
                 })
-                this.$refs.table.refresh();
             }
         }
     }
