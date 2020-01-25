@@ -3,14 +3,20 @@
         <Sidebar>
 
         </Sidebar>
+        <b-container fluid>
+            <AccountEditor>
+
+            </AccountEditor>
+        </b-container>
     </div>
 </template>
 
 <script>
     import Sidebar from "../components/Sidebar";
+    import AccountEditor from "../components/AccountEditor";
     export default {
         name: "Account",
-        components: {Sidebar},
+        components: {AccountEditor, Sidebar},
 
     }
 </script>

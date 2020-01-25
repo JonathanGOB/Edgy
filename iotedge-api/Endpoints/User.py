@@ -12,6 +12,7 @@ from TableStorage.TableStorageConnection import AzureTableStorage
 from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required,
                                 get_jwt_identity, get_raw_jwt, get_jwt_claims, verify_jwt_in_request)
 import json
+import copy
 
 parser = reqparse.RequestParser()
 parser.add_argument('Name', type=str, required=False)
@@ -201,16 +202,25 @@ class Account(Resource):
 
         if bcrypt.checkpw(args['Password'].encode("utf-8"), user['Password'].encode("utf-8")):
             try:
+                copy_user = copy.deepcopy(user)
+
                 user["Name"] = args["Name"].replace("'", ";")
                 user["Email"] = args["Email"].replace("'", ";")
                 user["Password"] = (
                     bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
                 del user["etag"]
-                table_service.update_entity('users', user)
-                user["Timestamp"] = user["Timestamp"].isoformat()
-                return {"message": "succes", "data": {"user": user, "uri": request.base_url}}, 200
+
+                filter = "Email eq '{0}'".format(args["Email"].replace("'", ";"))
+                checker = table_service.query_entities('users', filter)
+                if len(list(checker) > 0):
+                    return {"data":{"message": "email already used"}}, 400
+                elif len(list(checker)) == 0:
+                    table_service.delete_entity('users', copy_user["PartitionKey"], copy_user["RowKey"])
+                    table_service.insert_entity('users', user)
+                    user["Timestamp"] = user["Timestamp"].isoformat()
+                    return {"data":{"message": "succes", "data": {"user": user, "uri": request.base_url}}}, 200
             except:
-                return {"message": "not everything filled"}, 400
+                return {"data":{"message": "not everything  filled"}}, 400
 
         return {"data": {"message": "wrong password", "uri": request.base_url}}, 400
 
