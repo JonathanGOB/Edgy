@@ -45,7 +45,7 @@ class UserLogin(Resource):
         try:
             user = list(user)[0]
         except Exception as e:
-            return {"message": "email {} doesn't exist".format(args['Email'])}, 400
+            return {"data": {"message": "email {} doesn't exist".format(args['Email'])}}, 400
 
         if user:
             if bcrypt.checkpw(args['Password'].replace("'", ";").encode("utf-8"), user['Password'].encode("utf-8")):
@@ -134,7 +134,7 @@ class UserLogoutAccess(Resource):
                 isNew = True
             except:
                 print("concurrency problems")
-        
+
         try:
             revoked_token = {"PartitionKey": "AccessToken", "RowKey": str(revokedtokens_table["NewId"]), "Token": jti}
             table_service.insert_entity('revokedtokens', revoked_token)

@@ -56,16 +56,18 @@ export default new Vuex.Store({
 
         logout({commit, getters}) {
             axios.defaults.headers.common['Authorization'] = 'Bearer ' + getters.token;
-            User.logout().then(() => {
-                const token = null;
-                commit('removeToken', token);
+            return new Promise((resolve, reject) => {
+                User.logout().then(() => {
+                    const token = null;
+                    commit('removeToken', token);
 
-                const user = null;
-                commit('setUser', user)
-            }).then(()=>{
-                this.$router.push('/login')
-            }).catch(error => {
-                return error;
+                    const user = null;
+                    commit('setUser', user)
+                }).then(() => {
+                    resolve()
+                }).catch(error => {
+                    reject(error);
+                })
             })
         },
 
