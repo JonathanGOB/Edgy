@@ -185,9 +185,9 @@ class Account(Resource):
         user = list(user)[0]
         timestamp = user["Timestamp"].isoformat()
         return {"data": {"message": "success",
-                "user": {"name": user["Name"], "email": user["Email"], "id": user["RowKey"]},
-                                  "Last_updated": timestamp,
-                                  "uri": request.base_url}}, 200
+                         "user": {"name": user["Name"], "email": user["Email"], "id": user["RowKey"]},
+                         "Last_updated": timestamp,
+                         "uri": request.base_url}}, 200
 
     @jwt_required
     def put(self):
@@ -210,17 +210,21 @@ class Account(Resource):
                     bcrypt.hashpw(args["NewPassword"].replace("'", ";").encode("utf-8"), Salt.salt)).decode('utf-8')
                 del user["etag"]
 
-                filter = "Email eq '{0}'".format(args["Email"].replace("'", ";"))
+                print(user)
+                print(args)
+                filter = "Email eq '{0}' and Email ne '{1}'".format(args["Email"].replace("'", ";"), copy_user["Email"])
+
                 checker = table_service.query_entities('users', filter)
-                if len(list(checker) > 0):
-                    return {"data":{"message": "email already used"}}, 400
+                if len(list(checker)) > 0:
+                    return {"data": {"message": "email already used"}}, 400
+
                 elif len(list(checker)) == 0:
                     table_service.delete_entity('users', copy_user["PartitionKey"], copy_user["RowKey"])
                     table_service.insert_entity('users', user)
                     user["Timestamp"] = user["Timestamp"].isoformat()
-                    return {"data":{"message": "succes", "data": {"user": user, "uri": request.base_url}}}, 200
+                    return {"data": {"message": "succes", "data": {"user": user, "uri": request.base_url}}}, 200
             except:
-                return {"data":{"message": "not everything  filled"}}, 400
+                return {"data": {"message": "not everything  filled"}}, 400
 
         return {"data": {"message": "wrong password", "uri": request.base_url}}, 400
 

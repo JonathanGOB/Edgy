@@ -71,4 +71,17 @@ export default class User extends Model {
                 })
         });
     }
+
+    static userupdate(params){
+        return new Promise((resolve, reject) => {
+            axios.put('/Api/V1/Account', params)
+                .then(response => {
+                    const model = {"data": response.data};
+                    resolve(model);
+                })
+                .catch(error => {
+                    reject(error);
+                })
+        });
+    }
 }

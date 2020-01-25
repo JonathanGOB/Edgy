@@ -7,7 +7,7 @@
         </b-row>
         <b-row>
             <b-col>
-                <b-form @change="change" v-if="loaded">
+                <b-form v-if="loaded">
                     <b-form-group
                             id="input-group-1"
                             label="Email address:"
@@ -55,7 +55,7 @@
 
                     <b-form-group
                             id="input-group-4"
-                            label="password:"
+                            label="Password:"
                             label-for="input-4"
                             description="enter your new password."
                     >
@@ -67,7 +67,10 @@
                                 placeholder="Enter password"
                         ></b-form-input>
                     </b-form-group>
-                    <b-button type="change" variant="primary">change</b-button>
+                    <div>
+                        <span style="color:red">{{ error }}</span>
+                    </div>
+                    <b-button @click="change" variant="primary">change <font-awesome-icon icon="spinner" v-if="loading" spin/></b-button>
                 </b-form>
             </b-col>
         </b-row>
@@ -92,6 +95,8 @@
 
         data() {
             return {
+                error: "",
+                loading: false,
                 loaded: false,
                 form: {
                     name: "",
@@ -104,7 +109,27 @@
 
         methods:{
             change(){
-                
+                this.loading = true
+                User.userupdate({
+                    Name: this.form.name,
+                    Email: this.form.email,
+                    Password: this.form.password,
+                    NewPassword: this.form.newpassword
+                }).then(() => {
+                    this.error = "";
+                    this.$store.dispatch('auth', {
+                        Email: this.form.email,
+                        Password: this.form.newpassword
+                    }).catch((error) => {
+                        this.error = error.response.data.data.message;
+                        this.loading = false;
+                    })
+                }).catch((error) => {
+                    this.error = error.response.data.data.message;
+                    this.loading = false;
+                }).finally(() => {
+                    this.loading = false;
+                })
             }
         }
     }
