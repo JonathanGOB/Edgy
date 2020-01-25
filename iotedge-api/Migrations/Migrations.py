@@ -21,6 +21,7 @@ try:
     maketable(table_service, 'sensordata')
     maketable(table_service, 'rulers')
     maketable(table_service, 'revokedtokens')
+    maketable(table_service, 'sensordataqueue')
 
 except Exception as e:
     raise Exception("cannot make tables: ", e)
