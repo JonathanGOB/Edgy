@@ -48,8 +48,6 @@
                     row.push(parseInt(data.Datavalue))
                     this.chartData.push(row)
                 })
-                // eslint-disable-next-line no-console
-                console.log(this.chartData)
             }
         },
 

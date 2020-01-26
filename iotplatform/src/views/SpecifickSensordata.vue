@@ -109,7 +109,6 @@
                 })
             }
             this.interval = setInterval(this.update, 2000)
-
         },
 
         methods: {
@@ -137,10 +136,13 @@
                         this.error = error
                     })
                 }
+            },
 
-                // eslint-disable-next-line no-console
-                console.log("update")
-            }
+        },
+        // eslint-disable-next-line no-unused-vars
+        beforeRouteLeave (to, from, next) {
+            clearInterval(this.interval)
+            next()
         }
     }
 </script>
