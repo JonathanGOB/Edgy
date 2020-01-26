@@ -32,10 +32,9 @@ class SensorData(Resource):
         for connectionstring in connectionstrings:
             filter = "PartitionKey eq '{0}'".format(connectionstring)
             sensordata = table_service.query_entities('sensordata', filter=filter)
-            if len(list(sensordatas)) > 0:
+            if len(list(sensordata)) > 0:
                 for point in sensordata:
                     sensordatas.append(point)
-
         for row in sensordatas:
             row["Timestamp"] = row["Timestamp"].isoformat()
         return {"message": "success", "data": {"sensordata": sensordatas, "uri": request.base_url}}, 200

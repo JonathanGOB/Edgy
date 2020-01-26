@@ -1,5 +1,20 @@
 <template>
     <div>
+        <b-row>
+            <b-col>
+                <b-input-group size="sm" class="mt-sm-4">
+                    <b-form-input
+                            v-model="filter"
+                            type="search"
+                            id="filterInput"
+                            placeholder="Type to Search"
+                    ></b-form-input>
+                    <b-input-group-append>
+                        <b-button :disabled="!filter" @click="filter = ''">Clear</b-button>
+                    </b-input-group-append>
+                </b-input-group>
+            </b-col>
+        </b-row>
         <b-col>
             <b-table :items="items" :fields="headers" striped responsive="true" ref="table" class="mt-4" hover
                      :per-page="perPage"
