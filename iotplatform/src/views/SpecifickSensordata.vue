@@ -131,7 +131,7 @@
                         });
                         this.item = response
                     }).catch(error => {
-                        this.error = error.response.message
+                        this.error = error.response.data.data.message
                     })
                 }
                 else if (level == "sensorsdevice"){
@@ -142,7 +142,7 @@
                         });
                         this.item = response
                     }).catch(error => {
-                        this.error = error.response.message
+                        this.error = error.response.data.message
                     })
                 }
             },
