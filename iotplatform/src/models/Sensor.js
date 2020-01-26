@@ -3,11 +3,11 @@ import axios from "axios";
 
 export default class Sensor extends Model {
     static standardroute = "Sensors"
-    static relations = ["SensorDevices", "EdgeDevices"]
+    static relations = ["SensorsDevices", "EdgeDevices"]
 
     static getsensorsdevicesensors(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.relations[0]}/${id}/${this.endpoint}`)
+            axios.get(`/Api/V1/${this.relations[0]}/${id}/${this.standardroute}`)
                 .then(response => {
                     const model = {"data": response.data};
                     resolve(model);
@@ -20,7 +20,7 @@ export default class Sensor extends Model {
 
     static getedgedevicesensors(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.relations[1]}/${id}${this.endpoint}`)
+            axios.get(`/Api/V1/${this.relations[1]}/${id}${this.standardroute}`)
                 .then(response => {
                     const model = {"data": response.data};
                     resolve(model);

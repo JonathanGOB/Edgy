@@ -7,7 +7,7 @@ export default class SensorsDevice extends Model {
 
     static getedgedevicesensorsdevices(id){
         return new Promise((resolve, reject) => {
-            axios.get(`/Api/V1/${this.relation}/${id}/${this.endpoint}`)
+            axios.get(`/Api/V1/${this.relation}/${id}/${this.standardroute}`)
                 .then(response => {
                     const model = {"data": response.data};
                     resolve(model);

@@ -5,7 +5,7 @@
         </Sidebar>
         <b-container fluid>
             <b-row>
-                <Graph v-bind:device="device" :value="item">
+                <Graph :sensors="sensors" v-bind:device="device" :value="item">
 
                 </Graph>
             </b-row>
@@ -41,6 +41,7 @@
         components: {GraphTable, Graph, Sidebar},
         data(){
             return{
+                sensors: null,
                 devices: {},
                 device: "",
                 item: [],
@@ -77,6 +78,10 @@
 
                         this.item = response
                         this.interval = setInterval(this.update, 2000)
+                        Sensor.getsensorsdevicesensors(this.device.RowKey).then(response =>
+                        {
+                            this.sensors = response.data.data.sensors
+                        })
                     }).catch(error => {
                         this.error = error.response.data.message
                     })
