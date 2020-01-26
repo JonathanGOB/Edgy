@@ -107,24 +107,39 @@
                 }).catch(error => {
                     this.error = error
                 })
-
-                this.interval = setInterval(this.update, 10000)
-
             }
+            this.interval = setInterval(this.update, 2000)
+
         },
 
         methods: {
             update(){
-                SensorData.getsensorsensordata(this.device.RowKey).then(response => {
-                    response = response.data.data.sensordata
-                    response = response.sort(function (a, b) {
-                        return new Date(a.Timestamp) - new Date(b.Timestamp);
-                    });
+                let level = this.$route.params.level
+                if(level == "sensor") {
+                    SensorData.getsensorsensordata(this.device.RowKey).then(response => {
+                        response = response.data.data.sensordata
+                        response = response.sort(function (a, b) {
+                            return new Date(a.Timestamp) - new Date(b.Timestamp);
+                        });
+                        this.item = response
+                    }).catch(error => {
+                        this.error = error
+                    })
+                }
+                else if (level == "sensorsdevice"){
+                    SensorData.getsensorsdevicesensordata(this.device.RowKey).then(response => {
+                        response = response.data.data.sensordata
+                        response = response.sort(function (a, b) {
+                            return new Date(a.Timestamp) - new Date(b.Timestamp);
+                        });
+                        this.item = response
+                    }).catch(error => {
+                        this.error = error
+                    })
+                }
 
-                    this.item = response
-                }).catch(error => {
-                    this.error = error
-                })
+                // eslint-disable-next-line no-console
+                console.log("update")
             }
         }
     }
