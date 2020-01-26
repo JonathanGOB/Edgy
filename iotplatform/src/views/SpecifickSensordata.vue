@@ -5,14 +5,16 @@
         </Sidebar>
         <b-container fluid>
             <b-row>
-                <Graph v-bind:data="data">
+                <Graph v-bind:device="device" :value="item">
 
                 </Graph>
             </b-row>
             <b-row>
-                <GraphTable v-bind:data="data">
+                <b-container fluid>
+                <GraphTable v-bind:device="device" :value="item">
 
                 </GraphTable>
+                </b-container>
             </b-row>
         </b-container>
     </div>
@@ -32,8 +34,10 @@
         data(){
             return{
                 devices: {},
-                data: [],
-                error: ""
+                device: "",
+                item: [],
+                error: "",
+                interval: null,
             }
         },
         created() {
@@ -56,8 +60,14 @@
                 }).then(() => {
                     let id = this.$route.params.id
                     let device = this.devices[id]
+                    this.device = this.devices[id]
                     SensorData.getsensorsdevicesensordata(device.RowKey).then(response => {
-                        this.data = response.data.data.sensordata
+                        response = response.data.data.sensordata
+                        response = response.sort(function (a, b) {
+                            return new Date(a.Timestamp) - new Date(b.Timestamp);
+                        });
+
+                        this.item = response
                     }).catch(error => {
                         this.error = error
                     })
@@ -83,8 +93,14 @@
                 }).then(() => {
                     let id = this.$route.params.id
                     let device = this.devices[id]
+                    this.device = this.devices[id]
                     SensorData.getsensorsensordata(device.RowKey).then(response => {
-                        this.data = response.data.data.sensordata
+                        response = response.data.data.sensordata
+                        response = response.sort(function (a, b) {
+                            return new Date(a.Timestamp) - new Date(b.Timestamp);
+                        });
+
+                        this.item = response
                     }).catch(error => {
                         this.error = error
                     })
@@ -92,9 +108,24 @@
                     this.error = error
                 })
 
+                this.interval = setInterval(this.update, 10000)
 
             }
+        },
 
+        methods: {
+            update(){
+                SensorData.getsensorsensordata(this.device.RowKey).then(response => {
+                    response = response.data.data.sensordata
+                    response = response.sort(function (a, b) {
+                        return new Date(a.Timestamp) - new Date(b.Timestamp);
+                    });
+
+                    this.item = response
+                }).catch(error => {
+                    this.error = error
+                })
+            }
         }
     }
 </script>
