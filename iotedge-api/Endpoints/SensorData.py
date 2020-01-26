@@ -250,10 +250,12 @@ class GetSensorSensorData(Resource):
         if len(list(points)) > 0:
             sensordata = list(points)
         else:
-            return {"message": "error data not found"}, 400
+            return {"data": {"message": "error data not found"}}, 400
 
         for point in sensordata:
             point["Timestamp"] = point["Timestamp"].isoformat()
+
+        return {"data": {"message": "succes", "sensordata": sensordata}}, 200
 
 
 class GetSensorDeviceSensorData(Resource):
@@ -263,8 +265,7 @@ class GetSensorDeviceSensorData(Resource):
         storage = AzureTableStorage()
         table_service = storage.get_table()
         verify_jwt_in_request()
-
-        filter = "OwnerId eq '{0}' and SensorDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
+        filter = "OwnerId eq '{0}' and SensorsDeviceId eq '{1}'".format(get_jwt_claims()["id"], id.replace("'", ";"))
         sensors = table_service.query_entities('sensors', filter=filter)
         connectionstrings = []
         if len(list(sensors)) > 0:
@@ -281,6 +282,6 @@ class GetSensorDeviceSensorData(Resource):
             _sensordata = list(table_service.query_entities('sensordata', filter=filter))
             for _sensordata_ in _sensordata:
                 _sensordata_["Timestamp"] = _sensordata_["Timestamp"].isoformat()
-            sensordata.append(_sensordata)
+                sensordata.append(_sensordata_)
 
-        return {"message": "success", "data": {"sensordata": sensordata, "uri": request.base_url}}, 200
+        return {"data": {"message": "success", "sensordata": sensordata, "uri": request.base_url}}, 200
