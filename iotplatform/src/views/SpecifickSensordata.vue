@@ -16,6 +16,14 @@
                 </GraphTable>
                 </b-container>
             </b-row>
+            <b-row>
+                <b-col>
+                    <div>
+                        <span style="color:red">{{ error }}</span>
+                    </div>
+                </b-col>
+
+            </b-row>
         </b-container>
     </div>
 </template>
@@ -68,11 +76,12 @@
                         });
 
                         this.item = response
+                        this.interval = setInterval(this.update, 2000)
                     }).catch(error => {
-                        this.error = error
+                        this.error = error.response.data.message
                     })
                 }).catch(error => {
-                    this.error = error
+                    this.error = error.response.data.message
                 })
             }
 
@@ -101,14 +110,14 @@
                         });
 
                         this.item = response
+                        this.interval = setInterval(this.update, 2000)
                     }).catch(error => {
-                        this.error = error
+                        this.error = error.response.data.data.message
                     })
                 }).catch(error => {
-                    this.error = error
+                    this.error = error.response.data.data.message
                 })
             }
-            this.interval = setInterval(this.update, 2000)
         },
 
         methods: {
@@ -122,7 +131,7 @@
                         });
                         this.item = response
                     }).catch(error => {
-                        this.error = error
+                        this.error = error.response.message
                     })
                 }
                 else if (level == "sensorsdevice"){
@@ -133,7 +142,7 @@
                         });
                         this.item = response
                     }).catch(error => {
-                        this.error = error
+                        this.error = error.response.message
                     })
                 }
             },
