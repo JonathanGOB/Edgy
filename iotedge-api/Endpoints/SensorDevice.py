@@ -68,8 +68,7 @@ class SensorsDevices(Resource):
         except:
             return {"message": "fill all data"}, 400
 
-        check = "Name eq '{}' and EdgeDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
-                                                               args["EdgeDeviceId"].replace("'", ";"))
+        check = "Name eq '{}' and OwnerId eq '{}'".format(args["Name"].replace("'", ";"), get_jwt_claims()["id"])
 
         check_sensorsdevices = table_service.query_entities(
             'sensorsdevices', filter=check)

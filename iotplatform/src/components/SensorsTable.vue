@@ -353,7 +353,7 @@
                         this.loading = false;
                     }).catch((error) => {
                         this.loading = false;
-                        this.error = error.response.data.data.message;
+                        this.error = error.response.data.message;
                     })
                 }
             },

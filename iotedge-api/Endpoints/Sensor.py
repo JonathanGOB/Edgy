@@ -71,13 +71,12 @@ class Sensors(Resource):
         except:
             return {"message": "fill all data"}, 400
 
-        check = "Name eq '{}' and SensorsDeviceId eq '{}'".format(args["Name"].replace("'", ";"),
-                                                                  args["SensorsDeviceId"].replace("'", ";"))
+        check = "Name eq '{}' and OwnerId eq '{}'".format(args["Name"].replace("'", ";"), get_jwt_claims()["id"])
 
         check_sensors = table_service.query_entities(
             'sensors', filter=check)
 
-        if len(list(check_sensors)) >= 1:
+        if len(list(check_sensors)) > 0:
             return {"message": "error duplicate name"}, 400
 
         table_service.insert_entity('sensors', sensors_fields)

@@ -58,6 +58,7 @@
                 </b-col>
             </b-form-row>
         </form>
+
         <b-row>
             <b-col>
                 <span style="color:red">{{ error }}</span>
@@ -327,7 +328,7 @@
                         this.create_device.loading = false;
                     }).catch((error) => {
                         this.create_device.loading = false;
-                        this.error = error.response.data.data.message;
+                        this.error = error.response.data.message;
                     })
                 }
             },
