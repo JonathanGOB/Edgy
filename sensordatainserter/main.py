@@ -29,6 +29,7 @@ def loop():
                 print(sensors_fields)
 
                 table_service.insert_entity('sensordata', sensors_fields)
+                table_service.delete_entity('sensordataqueue', sensordata["PartitionKey"], sensordata["RowKey"])
             except Exception as e:
                 print("error: ", e)
         except:
