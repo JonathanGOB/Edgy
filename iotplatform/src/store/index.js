@@ -71,6 +71,14 @@ export default new Vuex.Store({
             })
         },
 
+        errorlogout({commit}){
+            const token = null;
+            commit('removeToken', token);
+
+            const user = null;
+            commit('setUser', user)
+        }
+
     },
     modules: {},
     plugins: [vuexLocalStorage.plugin]
