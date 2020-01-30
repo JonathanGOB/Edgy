@@ -82,4 +82,4 @@ api.add_resource(SensorData.GetSensorSensorData, '/Api/V1/Sensors/<string:id>/Se
 api.add_resource(SensorData.GetSensorDeviceSensorData, '/Api/V1/SensorsDevices/<string:id>/SensorData')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run()
