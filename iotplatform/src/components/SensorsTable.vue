@@ -128,7 +128,7 @@
                     </b-row>
 
                     <b-row class="mb-2">
-                        <b-col sm="3" class="text-sm-right"><b>Protocol:</b></b-col>
+                        <b-col sm="3" class="text-sm-right"><b>Datatype:</b></b-col>
                         <b-col>{{ row.item.Datatype }}</b-col>
                     </b-row>
 

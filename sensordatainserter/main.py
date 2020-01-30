@@ -21,7 +21,7 @@ def loop():
                 table_service.update_entity('rulers', ruler_sensordata, if_match=sensordata_table["etag"])
                 try:
                     sensors_fields = {
-                        "PartitionKey": sensordata["PartitionKey"].replace("'", ";"),
+                        "PartitionKey": "9ed466971e4f86bba8412b3fe2bee8e805ea41a5a5fdf5636cdae95d419d4a09",
                         "RowKey": str(sensordata_table["NewId"]),
                         "Datavalue": sensordata["Datavalue"],
                         "Made_at": datetime.strptime(sensordata["Updated"], '%Y-%m-%d %H:%M:%S').astimezone(pytz.UTC)

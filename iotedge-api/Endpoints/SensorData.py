@@ -34,6 +34,7 @@ class SensorData(Resource):
             sensordata = table_service.query_entities('sensordata', filter=filter)
             if len(list(sensordata)) > 0:
                 for point in sensordata:
+                    del point["Made_at"]
                     sensordatas.append(point)
         for row in sensordatas:
             row["Timestamp"] = row["Timestamp"].isoformat()
@@ -117,7 +118,6 @@ class SingleSensorData(Resource):
         filter = "ConnectionString eq '{0}' and OwnerId eq '{1}'".format(connectionstring, get_jwt_claims()["id"])
 
         sensor = table_service.query_entities('sensors', filter=filter)
-
         if len(list(sensor)) > 0:
             sensordata["Timestamp"] = sensordata["Timestamp"].isoformat()
             return {"message": "success", "data": {"sensordata": sensordata, "uri": request.base_url}}, 200
@@ -252,6 +252,7 @@ class GetSensorSensorData(Resource):
             return {"data": {"message": "error data not found"}}, 400
 
         for point in sensordata:
+            del point["Made_at"]
             point["Timestamp"] = point["Timestamp"].isoformat()
 
         return {"data": {"message": "succes", "sensordata": sensordata}}, 200
@@ -281,6 +282,7 @@ class GetSensorDeviceSensorData(Resource):
             _sensordata = list(table_service.query_entities('sensordata', filter=filter))
             for _sensordata_ in _sensordata:
                 _sensordata_["Timestamp"] = _sensordata_["Timestamp"].isoformat()
+                del _sensordata_["Made_at"]
                 sensordata.append(_sensordata_)
 
         return {"data": {"message": "success", "sensordata": sensordata, "uri": request.base_url}}, 200
