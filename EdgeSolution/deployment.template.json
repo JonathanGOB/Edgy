@@ -57,23 +57,13 @@
           }
         },
         "modules": {
-          "SensorRS485Module": {
-            "version": "1.0",
+          "DataGeneratorV2": {
+            "version": "1.0.0",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "${MODULES.SensorRS485Module}",
-              "createOptions": {}
-            }
-          },
-          "SimulatedTemperatureSensor": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
+              "image": "${MODULES.DataGeneratorV2}",
               "createOptions": {}
             }
           }
@@ -84,11 +74,35 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "SensorRS485ModuleToIoTHub": "FROM /messages/modules/SensorRS485Module/outputs/* INTO $upstream",
-          "sensorToSensorRS485Module": "FROM /messages/modules/SimulatedTemperatureSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/SensorRS485Module/inputs/input1\")"
+          "DataGeneratorV2ToIoTHub": "FROM /messages/modules/DataGeneratorV2/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
+        }
+      }
+    },
+    "DataGeneratorV2":{
+      "properties.desired": {
+        "UniqueSensorDeviceId": "TestDataGenerator",
+        "Protocol": "Generator",
+        "Description": "Random data generator",
+        "Location": "Somewhere",
+        "ForeignKeyEdgeDevice": "RPI-01",
+        "OwnerId": "Henk",
+        "PartitionKey": "whatever",
+        "Sensors": {
+          "Random1":{
+            "Name": "Random data generator",
+            "PartitionKey":"2c0f1fa8d674c365ff9e8bc2a060fb7b721d312bb5e5a513a227b49e7498a831",
+            "Datatype": "Volt",
+            "Description": "No"
+          },
+          "Random2":{
+            "Name": "Random data generator",
+            "PartitionKey":"884729ebfda3b544d116bbb6773e38d584c043d7fb000e3d378969d2dadf3004",
+            "Datatype": "Ampere",
+            "Description": "No"
+          }
         }
       }
     }

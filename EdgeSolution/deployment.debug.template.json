@@ -57,14 +57,27 @@
           }
         },
         "modules": {
-          "SensorRS485Module": {
+          "DataGenerator": {
             "version": "1.0",
             "type": "docker",
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "${MODULES.SensorRS485Module.debug}",
-              "createOptions": {}
+              "image": "${MODULES.DataGenerator.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
             }
           },
           "SimulatedTemperatureSensor": {
@@ -76,6 +89,29 @@
               "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
               "createOptions": {}
             }
+          },
+          "DataGeneratorV2": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.DataGeneratorV2.debug}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "5678/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "5678/tcp": [
+                      {
+                        "HostPort": "5678"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -84,8 +120,9 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "SensorRS485ModuleToIoTHub": "FROM /messages/modules/SensorRS485Module/outputs/* INTO $upstream",
-          "sensorToSensorRS485Module": "FROM /messages/modules/SimulatedTemperatureSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/SensorRS485Module/inputs/input1\")"
+          "DataGeneratorToIoTHub": "FROM /messages/modules/DataGenerator/outputs/* INTO $upstream",
+          "sensorToDataGenerator": "FROM /messages/modules/SimulatedTemperatureSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/DataGenerator/inputs/input1\")",
+          "DataGeneratorV2ToIoTHub": "FROM /messages/modules/DataGeneratorV2/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
