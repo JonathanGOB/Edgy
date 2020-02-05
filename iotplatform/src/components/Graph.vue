@@ -33,6 +33,7 @@
                 },
 
                 chartOptions: {
+                    interpolateNulls: true,
                     chart: {
                         title: this.$props.device.Name,
                         subtitle: 'sensor data',
