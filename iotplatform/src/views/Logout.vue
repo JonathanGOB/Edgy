@@ -11,7 +11,9 @@
             this.$store.dispatch('logout').then(() => {
                 this.$router.push('/login')
             }).catch(() => {
-                this.$store.dispatch('errorlogout')
+                this.$store.dispatch('errorlogout').then(() => {
+                    this.$router.push('/login')
+                })
             })
         }
     }
